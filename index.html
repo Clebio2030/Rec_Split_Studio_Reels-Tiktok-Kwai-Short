@@ -1,0 +1,3511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@clebioz — Gravador de Tela Dividida & Teleprompter</title>
+
+  <!-- SEO & Social Meta -->
+  <meta name="description"
+    content="@clebioz Studio: Gravador de tela dividida profissional para Reels, TikTok, Kwai e YouTube com teleprompter integrado.">
+
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #090b10;
+      --bg-surface: #0f131a;
+      --bg-surface-elevated: #151a22;
+      --bg-surface-hover: #1c222e;
+      --bg-glass: rgba(15, 19, 26, 0.85);
+      --bg-glass-card: rgba(21, 26, 34, 0.75);
+
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.14);
+      --border-focus: rgba(255, 255, 255, 0.3);
+
+      /* Single sleek signature accent */
+      --primary: #f97316;
+      --primary-gradient: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      --primary-glow: rgba(249, 115, 22, 0.25);
+      
+      --danger: #e11d48;
+      --danger-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+      --danger-glow: rgba(225, 29, 72, 0.3);
+
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --transition-smooth: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", "Inter", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-full);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    /* Top Navbar */
+    header {
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(9, 11, 16, 0.92);
+      backdrop-filter: blur(24px) saturate(180%);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 54px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .brand:hover {
+      opacity: 0.9;
+    }
+
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      background: #ffffff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #090b10;
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .rec-badge {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 12px;
+      background: rgba(225, 29, 72, 0.12);
+      border: 1px solid rgba(225, 29, 72, 0.28);
+      border-radius: var(--radius-full);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #fca5a5;
+    }
+
+    .rec-badge.active {
+      display: flex;
+    }
+
+    .rec-badge.paused {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+
+    .rec-badge.paused .rec-dot {
+      background: #94a3b8;
+      box-shadow: none;
+      animation: none;
+    }
+
+    .rec-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--danger);
+      border-radius: 50%;
+      animation: pulseRec 1.4s infinite;
+      box-shadow: 0 0 8px var(--danger-glow);
+    }
+
+    @keyframes pulseRec {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    /* App Main Layout Grid */
+    .studio-container {
+      display: grid;
+      grid-template-columns: 310px 1fr 340px;
+      height: calc(100vh - 54px);
+      overflow: hidden;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .studio-container.no-prompter {
+      grid-template-columns: 330px 1fr 0px;
+    }
+
+    .studio-container.no-prompter #prompterPanel {
+      display: none;
+    }
+
+    /* Left & Right Panels */
+    .panel-card {
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    #prompterPanel {
+      border-right: none;
+      border-left: 1px solid var(--border-subtle);
+    }
+
+    .panel-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.01);
+      min-height: 44px;
+    }
+
+    .panel-title {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .panel-body {
+      padding: 14px 16px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Tabs Navigation (Apple Segmented Control Style) */
+    .tabs-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 3px;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 3px;
+      border-radius: 9px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      padding: 6px 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tab-btn.active {
+      background: #ffffff;
+      color: #090b10;
+      font-weight: 700;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+
+    .tab-pane {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .tab-pane.active {
+      display: flex;
+    }
+
+    /* Quality Selector Pills */
+    .btn-quality-pill {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-quality-pill:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-medium);
+      color: #fff;
+    }
+
+    .btn-quality-pill.active {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* Form Controls */
+    .btn-emoji-tag {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      line-height: 1;
+    }
+
+    .btn-emoji-tag:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    /* Quadros Chips (Subdued Tags) */
+    .quadro-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      border-radius: var(--radius-full);
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition-smooth);
+      max-width: 175px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 500;
+    }
+
+    .quadro-chip:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: var(--text-main);
+    }
+
+    .quadro-chip.active {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.35);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* Takes Timeline Box */
+    .takes-timeline-box {
+      width: 100%;
+      max-width: 600px;
+      background: var(--bg-glass-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 9px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    .takes-segments-track {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 5px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .take-segment {
+      height: 100%;
+      background: #ffffff;
+      border-radius: var(--radius-full);
+      flex-shrink: 0;
+      position: relative;
+      transition: var(--transition-smooth);
+    }
+
+    .take-segment.current-recording {
+      background: var(--danger);
+      animation: pulseTake 0.8s infinite alternate;
+    }
+
+    @keyframes pulseTake {
+      0% { opacity: 0.6; }
+      100% { opacity: 1.0; }
+    }
+
+    .takes-chips-list {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .take-badge {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: #e2e8f0;
+      font-size: 10.5px;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      padding: 2px 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .btn-take-action {
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 5px 11px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-undo-take {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: #e2e8f0;
+    }
+
+    .btn-undo-take:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+    }
+
+    /* Minimalist Toolbar Trash Button */
+    .btn-toolbar-trash {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: #94a3b8;
+      border-radius: var(--radius-full);
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: var(--transition-smooth);
+      flex-shrink: 0;
+    }
+
+    .btn-toolbar-trash:hover {
+      background: rgba(225, 29, 72, 0.18);
+      border-color: rgba(225, 29, 72, 0.4);
+      color: #fca5a5;
+      transform: scale(1.06);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-control {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .form-control:focus {
+      border-color: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+    }
+
+    select.form-control {
+      cursor: pointer;
+    }
+
+    /* Apple Minimalist Sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+      transition: transform 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .slider-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+
+    /* Stream Toggle Buttons */
+    .btn-stream-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 13px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-stream-toggle:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-medium);
+    }
+
+    .btn-stream-toggle.active {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .status-bulb {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #475569;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-stream-toggle.active .status-bulb {
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success-glow);
+    }
+
+    /* Audio VU Meter */
+    .vu-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .vu-track {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .vu-fill {
+      height: 100%;
+      width: 0%;
+      background: #10b981;
+      border-radius: var(--radius-full);
+      transition: width 0.08s ease-out;
+    }
+
+    /* Layout Matrix Grid */
+    .layout-matrix {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .btn-layout {
+      padding: 9px 6px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-layout:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-medium);
+      color: var(--text-main);
+    }
+
+    .btn-layout.active {
+      border-color: rgba(255, 255, 255, 0.35);
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* CENTER: Viewport Stage */
+    .viewport-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px 6px 12px;
+      position: relative;
+      background: #040508;
+      gap: 6px;
+      height: 100%;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .canvas-stage {
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      max-height: calc(100vh - 170px);
+      aspect-ratio: 9 / 16;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas#studioCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      transition: transform 0.15s ease-out;
+    }
+
+    /* Floating Action Toolbar */
+    .floating-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 19, 26, 0.92);
+      backdrop-filter: blur(24px) saturate(180%);
+      padding: 6px 10px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      z-index: 50;
+    }
+
+    .btn-cta-rec {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      font-family: 'Outfit', -apple-system, sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-rec-start {
+      background: var(--danger);
+      color: #ffffff;
+      box-shadow: 0 2px 12px var(--danger-glow);
+    }
+
+    .btn-rec-start:hover {
+      transform: scale(1.02);
+      background: #be123c;
+    }
+
+    .btn-rec-pause {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    .btn-rec-pause:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-rec-resume {
+      background: #ffffff;
+      color: #090b10;
+    }
+
+    .btn-rec-resume:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-rec-stop {
+      background: #ffffff;
+      color: #090b10;
+      font-weight: 800;
+    }
+
+    .btn-rec-stop:hover {
+      background: #e2e8f0;
+    }
+
+    /* Hook 3s Countdown Badge */
+    .live-hook-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: var(--radius-full);
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #ffffff;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      z-index: 20;
+    }
+
+    /* RIGHT: Prompter Styles */
+    .prompter-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 7px 10px;
+      background: var(--bg-surface-elevated);
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .prompter-scroll-box {
+      flex: 1;
+      background: #05070c;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      padding: 16px;
+      overflow-y: auto;
+      position: relative;
+      scroll-behavior: smooth;
+    }
+
+    .prompter-text-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      padding-bottom: 220px;
+    }
+
+    .script-block {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.025);
+      border-left: 3px solid rgba(255, 255, 255, 0.2);
+      transition: var(--transition-smooth);
+    }
+
+    .script-block:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .block-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+      display: inline-block;
+      color: #94a3b8;
+    }
+
+    /* Modal Styles */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(16px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-mini-add {
+      background: #ffffff;
+      border: none;
+      color: #090b10;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-mini-add:hover {
+      transform: scale(1.08);
+      background: #e2e8f0;
+    }
+  </style>
+
+<body>
+
+  <!-- Background Video Element Sources (Posicionados fora da tela para decodificação contínua da GPU) -->
+  <video id="rawCam" autoplay playsinline muted style="position:fixed; top:-9999px; left:-9999px; width:640px; height:480px; opacity:0; pointer-events:none; z-index:-1000;"></video>
+  <video id="rawScreen" autoplay playsinline muted style="position:fixed; top:-9999px; left:-9999px; width:640px; height:480px; opacity:0; pointer-events:none; z-index:-1000;"></video>
+
+  <!-- Navbar -->
+  <header>
+    <a href="#" class="brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" style="color:#ffffff;">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>@clebioz</h1>
+        <span>Estúdio de Gravação Reels & TikTok</span>
+      </div>
+    </a>
+
+    <div class="header-actions">
+      <button class="tab-btn" id="btnTogglePrompterView"
+        style="background: rgba(255,255,255,0.06); border:1px solid var(--border-subtle); color:var(--text-main); padding: 8px 14px; font-weight:600; display:flex; align-items:center; gap:6px;">
+        <span>📜 Roteiro</span>
+      </button>
+
+      <div class="rec-badge" id="recBadge">
+        <span class="rec-dot"></span>
+        <span style="font-family:'JetBrains Mono', monospace; letter-spacing:0.5px;">GRAVANDO</span>
+        <span id="recTimerText"
+          style="font-family:'JetBrains Mono', monospace; font-weight:700; color:#fff; margin-left:4px;">00:00</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Studio Work Area -->
+  <main class="studio-container" id="mainLayout">
+
+    <!-- LEFT PANEL: Controls & Adjustments -->
+    <aside class="panel-card">
+      <div class="panel-header">
+        <span class="panel-title">🎛️ Controle de Estúdio</span>
+      </div>
+
+      <div class="panel-body">
+
+        <!-- Navigation Tabs -->
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="tab-sources">Fontes</button>
+          <button class="tab-btn" data-tab="tab-adjust">Ajustes</button>
+          <button class="tab-btn" data-tab="tab-format">Formato</button>
+        </div>
+
+        <!-- TAB 1: Sources & Central Banner -->
+        <div class="tab-pane active" id="tab-sources">
+          <button class="btn-stream-toggle active" id="btnToggleCam">
+            <span>📷 Câmera Web</span>
+            <span class="status-bulb" id="camBulb"></span>
+          </button>
+
+          <div class="form-group">
+            <label class="form-label">Trocar Câmera:</label>
+            <select class="form-control" id="cameraSelect">
+              <option value="">Carregando dispositivos...</option>
+            </select>
+          </div>
+
+          <button class="btn-stream-toggle" id="btnToggleScreen">
+            <span>🖥️ Compartilhar Tela / Janela</span>
+            <span class="status-bulb" id="screenBulb"></span>
+          </button>
+
+          <button class="btn-stream-toggle active" id="btnToggleMic">
+            <span>🎙️ Microfone Ativo</span>
+            <span class="status-bulb" id="micBulb"></span>
+          </button>
+
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <label class="form-label" style="margin-bottom:0;">Trocar Microfone:</label>
+              <button type="button" id="btnRefreshMics" title="Atualizar Lista de Dispositivos" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:11px; display:flex; align-items:center; gap:2px; font-weight:700;">🔄 Atualizar</button>
+            </div>
+            <select class="form-control" id="micSelect">
+              <option value="">Carregando microfones...</option>
+            </select>
+          </div>
+
+          <div class="vu-box">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted);">
+              <span>Nível de Áudio (Microfone)</span>
+              <span id="vuPercent">0%</span>
+            </div>
+            <div class="vu-track">
+              <div class="vu-fill" id="vuFill"></div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:2px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:4px;">
+              <span>Volume do Microfone:</span>
+              <span class="slider-val" id="micVolVal">100%</span>
+            </div>
+            <input type="range" id="micVolSlider" min="0" max="200" step="5" value="100">
+          </div>
+
+          <!-- ÁUDIO DO SISTEMA / COMPUTADOR (MIXER PROFISSIONAL) -->
+          <div class="form-group"
+            style="background: rgba(255, 255, 255, 0.03); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); margin-top:4px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <span
+                style="font-size:12px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+                <span>🔊 Áudio do Computador / PC</span>
+              </span>
+              <label
+                style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; font-weight:700; color:var(--primary);">
+                <input type="checkbox" id="chkSystemAudio" checked
+                  style="accent-color:var(--primary); cursor:pointer; width:16px; height:16px;">
+                <span id="sysAudioStateLabel">Ativo</span>
+              </label>
+            </div>
+            <div
+              style="display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--text-muted);">
+              <span>Volume do PC:</span>
+              <span class="slider-val" id="sysAudioVolVal">100%</span>
+            </div>
+            <input type="range" id="sysAudioVolSlider" min="0" max="150" step="5" value="100">
+            <div style="font-size:10px; color:var(--text-dim); margin-top:4px;">
+              💡 <em>Ao compartilhar a tela, marque a opção "Compartilhar áudio do sistema" na janela do navegador.</em>
+            </div>
+          </div>
+
+          <!-- SELETOR RÁPIDO DE RESOLUÇÃO (FULL HD / 2K / 4K) -->
+          <div
+            style="background: rgba(0, 0, 0, 0.35); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span
+                style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--gold); letter-spacing:0.5px;">💎
+                Resolução de Gravação</span>
+              <span class="slider-val" id="qualityBadgeValSources" style="font-size:11px; color:var(--gold);">1080p FULL
+                HD</span>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:4px;">
+              <button type="button" class="btn-quality-pill active" data-quality="1080p">⚡ 1080p Full HD</button>
+              <button type="button" class="btn-quality-pill" data-quality="2k">🔥 2K Quad HD</button>
+              <button type="button" class="btn-quality-pill" data-quality="4k">💎 4K Ultra HD</button>
+            </div>
+          </div>
+
+          <!-- NOME DO QUADRO (BANNER CENTRAL) DIRETO NA ABA FONTES -->
+          <div style="margin-top:4px; padding-top:10px; border-top:1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div
+                style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--primary); letter-spacing:0.5px;">
+                🏷️ Nome do Quadro (Banner Central)</div>
+              <span style="font-size:10px; color:var(--text-dim);">💾 Salvo na memória</span>
+            </div>
+
+            <!-- Seletor de Quadros Salvos / Presets -->
+            <div class="form-group" style="margin-bottom:6px;">
+              <div style="display:flex; gap:6px;">
+                <select class="form-control" id="presetQuadroSelect" style="flex:1; font-size:12px; height:34px; padding:4px 8px;">
+                  <option value="">📁 Escolher quadro salvo...</option>
+                </select>
+                <button type="button" id="btnDeleteQuadroPreset" title="Excluir quadro selecionado da lista" style="background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444; border-radius:6px; padding:0 10px; cursor:pointer; font-size:12px;" disabled>🗑️</button>
+              </div>
+            </div>
+
+            <!-- Input do Banner com Botão de Salvar -->
+            <div class="form-group" style="margin-bottom:8px;">
+              <div style="display:flex; gap:6px;">
+                <input type="text" class="form-control" id="bannerTextInput" value="🧠 INTELIGÊNCIA ARTIFICIAL"
+                  placeholder="Digite o nome do quadro ou tema" style="flex:1;">
+                <button type="button" id="btnSaveQuadroPreset" title="Salvar este nome na sua lista de quadros" style="background:rgba(249, 115, 22, 0.2); border:1px solid var(--primary); color:var(--primary); font-weight:700; border-radius:6px; padding:0 10px; cursor:pointer; font-size:11px; white-space:nowrap; display:flex; align-items:center; gap:4px;">
+                  <span>💾 Salvar</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Chips de Quadros Rápidos -->
+            <div id="quadroChipsContainer" style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px;">
+              <!-- Gerado dinamicamente via JS -->
+            </div>
+
+            <!-- Emojis Rápidos -->
+            <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <span style="font-size:10px; color:var(--text-dim); margin-right:2px;">Emojis:</span>
+              <button type="button" class="btn-emoji-tag" data-emoji="⚡">⚡</button>
+              <button type="button" class="btn-emoji-tag" data-emoji="🤖">🤖</button>
+              <button type="button" class="btn-emoji-tag" data-emoji="🔥">🔥</button>
+              <button type="button" class="btn-emoji-tag" data-emoji="🚀">🚀</button>
+              <button type="button" class="btn-emoji-tag" data-emoji="💻">💻</button>
+              <button type="button" class="btn-emoji-tag" data-emoji="📊">📊</button>
+              <button type="button" class="btn-emoji-tag" data-emoji="🧠">🧠</button>
+              <button type="button" class="btn-emoji-tag" data-emoji="💡">💡</button>
+              <button type="button" class="btn-emoji-tag" data-emoji="📲">📲</button>
+              <button type="button" class="btn-emoji-tag" data-emoji="🎯">🎯</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Camera & Screen Adjustments (Pan/Zoom/Brightness/Contrast/Saturation) -->
+        <div class="tab-pane" id="tab-adjust">
+          <div
+            style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--primary); letter-spacing:0.5px;">
+            📷 Ajustes Avançados da Câmera</div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Zoom da Câmera</span>
+              <span class="slider-val" id="camZoomVal">1.0x</span>
+            </label>
+            <input type="range" id="camZoomSlider" min="1.0" max="2.5" step="0.05" value="1.0">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Posição Horizontal (Pan X)</span>
+              <span class="slider-val" id="camPanXVal">50%</span>
+            </label>
+            <input type="range" id="camPanXSlider" min="0" max="100" step="1" value="50">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Posição Vertical (Pan Y)</span>
+              <span class="slider-val" id="camPanYVal">50%</span>
+            </label>
+            <input type="range" id="camPanYSlider" min="0" max="100" step="1" value="50">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Brilho da Imagem</span>
+              <span class="slider-val" id="camBrightVal">100%</span>
+            </label>
+            <input type="range" id="camBrightSlider" min="80" max="150" step="1" value="100">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Contraste da Imagem</span>
+              <span class="slider-val" id="camContrastVal">100%</span>
+            </label>
+            <input type="range" id="camContrastSlider" min="80" max="150" step="1" value="100">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Saturação (Cor)</span>
+              <span class="slider-val" id="camSatVal">100%</span>
+            </label>
+            <input type="range" id="camSatSlider" min="50" max="180" step="1" value="100">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Espelhar Câmera (Mirror)</span>
+            </label>
+            <select class="form-control" id="camMirrorSelect">
+              <option value="false">Normal</option>
+              <option value="true" selected>Espelhado (Selfie)</option>
+            </select>
+          </div>
+
+          <div
+            style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--accent); letter-spacing:0.5px; margin-top:8px;">
+            🖥️ Ajustes da Tela Compartilhada</div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Zoom da Tela</span>
+              <span class="slider-val" id="screenZoomVal">1.0x</span>
+            </label>
+            <input type="range" id="screenZoomSlider" min="1.0" max="3.0" step="0.05" value="1.0">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Mover Tela Horizontal (X)</span>
+              <span class="slider-val" id="screenPanXVal">50%</span>
+            </label>
+            <input type="range" id="screenPanXSlider" min="0" max="100" step="1" value="50">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Mover Tela Vertical (Y)</span>
+              <span class="slider-val" id="screenPanYVal">50%</span>
+            </label>
+            <input type="range" id="screenPanYSlider" min="0" max="100" step="1" value="50">
+          </div>
+
+          <div
+            style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--gold); letter-spacing:0.5px; margin-top:8px;">
+            📐 Divisão & Cores</div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Divisão da Tela (Split Ratio)</span>
+              <span class="slider-val" id="splitRatioVal">50/50</span>
+            </label>
+            <input type="range" id="splitRatioSlider" min="30" max="70" step="1" value="50">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Tamanho Câmera PiP (Círculo)</span>
+              <span class="slider-val" id="pipSizeVal">32%</span>
+            </label>
+            <input type="range" id="pipSizeSlider" min="15" max="50" step="1" value="32">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Cor da Linha Divisória</span>
+            </label>
+            <select class="form-control" id="dividerColorSelect">
+              <option value="#f97316" selected>🔥 Laranja Cs Digital (Oficial)</option>
+              <option value="#fbbf24">🟡 Dourado Neon</option>
+              <option value="#06b6d4">⚡ Ciano Neon</option>
+              <option value="#10b981">🟢 Verde Esmeralda</option>
+              <option value="#a855f7">🟣 Roxo Elétrico</option>
+              <option value="transparent">🚫 Sem Linha</option>
+            </select>
+          </div>
+
+          <div
+            style="background:rgba(255,255,255,0.03); border:1px dashed var(--border-subtle); padding:8px 10px; border-radius:8px; font-size:11px; color:var(--text-muted);">
+            💡 <strong>Dicas:</strong><br>
+            • <strong>Mouse Scroll:</strong> Aumenta / Diminui o zoom.<br>
+            • <strong>Arrastar Linha:</strong> Redimensiona câmera vs tela.<br>
+            • <strong>Duplo Clique:</strong> Reseta o enquadramento.
+          </div>
+        </div>
+
+        <!-- TAB 3: Format & Layout -->
+        <div class="tab-pane" id="tab-format">
+          <div class="form-group">
+            <label class="form-label">Proporção do Vídeo:</label>
+            <select class="form-control" id="aspectSelect">
+              <option value="9:16" selected>📱 9:16 Reels / TikTok / Kwai</option>
+              <option value="16:9">💻 16:9 YouTube / Monitor PC</option>
+              <option value="1:1">🟦 1:1 Quadrado (Feed Instagram)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Qualidade de Gravação:</span>
+              <span class="slider-val" id="qualityBadgeVal" style="font-size:11px;">1080p</span>
+            </label>
+            <select class="form-control" id="qualitySelect">
+              <option value="1080p" selected>⚡ Full HD 1080p (Padrão Reels/TikTok • 60fps)</option>
+              <option value="2k">🔥 2K Quad HD Ultra Nítido (1440x2560 • 60fps)</option>
+              <option value="4k">💎 4K Ultra HD Master (2160x3840 • 60fps)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Estilo de Layout:</label>
+            <div class="layout-matrix">
+              <button class="btn-layout active" data-layout="split-vertical">
+                <span>📱 Dividida (Cima/Baixo)</span>
+              </button>
+              <button class="btn-layout" data-layout="split-vertical-inv">
+                <span>🔄 Tela Cima / Cam Baixo</span>
+              </button>
+              <button class="btn-layout" data-layout="pip-circle">
+                <span>🔘 Câmera Círculo (PiP)</span>
+              </button>
+              <button class="btn-layout" data-layout="split-horizontal">
+                <span>💻 Lado a Lado (50/50)</span>
+              </button>
+              <button class="btn-layout" data-layout="cam-only">
+                <span>👤 Apenas Câmera</span>
+              </button>
+              <button class="btn-layout" data-layout="screen-only">
+                <span>🖥️ Apenas Tela</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SAVE DEFAULT PARAMETERS BUTTON -->
+        <div
+          style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:8px;">
+          <button class="tab-btn" id="btnSaveDefaults"
+            style="width:100%; background:linear-gradient(135deg, #f97316, #ea580c); color:#ffffff; font-weight:700; padding:10px 14px; border-radius:10px; justify-content:center; box-shadow:0 0 16px var(--primary-glow); font-size:13px; cursor:pointer;">
+            💾 Salvar Parâmetros Como Padrão
+          </button>
+          <span id="saveStatusMsg"
+            style="font-size:11px; text-align:center; color:var(--success); display:none; font-weight:600;">✓ Parâmetros
+            salvos como padrão fixo!</span>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- CENTER PANEL: Canvas Preview & Controls -->
+    <section class="viewport-panel">
+      <!-- Preview Zoom & Stage -->
+      <div
+        style="display:flex; align-items:center; justify-content:space-between; width:100%; max-width:600px; padding:0 8px;">
+        <span
+          style="font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">📺
+          Prévia do Estúdio</span>
+        <div
+          style="display:flex; align-items:center; gap:6px; background:rgba(0,0,0,0.4); padding:4px 10px; border-radius:20px; border:1px solid var(--border-subtle);">
+          <span style="font-size:11px; color:var(--text-muted);">Tamanho Prévia:</span>
+          <button class="tab-btn" id="btnZoomOutPreview" style="padding:2px 8px; font-size:12px;">−</button>
+          <span class="slider-val" id="previewScaleVal"
+            style="font-size:11px; min-width:32px; text-align:center;">100%</span>
+          <button class="tab-btn" id="btnZoomInPreview" style="padding:2px 8px; font-size:12px;">+</button>
+          <button class="tab-btn" id="btnResetPreview" style="padding:2px 8px; font-size:11px;">Ajustar</button>
+        </div>
+      </div>
+
+      <div class="canvas-stage" id="canvasStageContainer">
+        <!-- Live Hook 3s Indicator -->
+        <div class="live-hook-badge" id="hookBadge">
+          <span>🎣 Gancho:</span>
+          <span id="hookCountdownVal">3.0s</span>
+        </div>
+        <canvas id="studioCanvas" width="1080" height="1920"></canvas>
+      </div>
+
+      <!-- INSTAGRAM / REELS STYLE SEGMENTED TAKES TIMELINE (NA PARTE DE BAIXO) -->
+      <div class="takes-timeline-box" id="takesTimelineBox" style="display:none; width:100%; max-width:600px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">🎬 Trechos Gravados:</span>
+            <span id="takesCountLabel" style="font-size:11px; font-weight:700; color:#fff; font-family:'JetBrains Mono', monospace; background:rgba(255,255,255,0.1); padding:1px 6px; border-radius:10px;">0 trechos</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:11px; color:var(--text-muted);">Tempo Total:</span>
+            <span id="takesTotalTimeLabel" style="font-size:12px; font-weight:700; color:#ffffff; font-family:'JetBrains Mono', monospace;">00:00</span>
+          </div>
+        </div>
+
+        <!-- Segmented bar (Like Instagram Stories/Reels) -->
+        <div class="takes-segments-track" id="takesSegmentsTrack">
+          <!-- Dynamically populated takes bars -->
+        </div>
+
+        <!-- Takes chips list & Action buttons (Undo last take) -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px; flex-wrap:wrap; gap:6px;">
+          <div class="takes-chips-list" id="takesChipsList">
+            <!-- Chips like "Trecho 1 (12s)", "Trecho 2 (5s)" -->
+          </div>
+          <div style="display:flex; gap:6px; margin-left:auto;">
+            <button type="button" class="btn-take-action btn-undo-take" id="btnUndoTake" title="Desfazer o último trecho gravado e regravar a partir daqui" style="display:none;">
+              <span>↩️ Desfazer Último Trecho</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Floating Bar & Shortcuts Hint -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; max-width:600px;">
+        <div class="floating-toolbar">
+          <button class="btn-cta-rec btn-rec-start" id="btnStartRecord">
+            <span>🔴 Iniciar Gravação (R)</span>
+          </button>
+          <button class="btn-cta-rec btn-rec-pause" id="btnPauseRecord" style="display:none;">
+            <span>⏸️ Pausar (Espaço)</span>
+          </button>
+          <button class="btn-cta-rec btn-rec-resume" id="btnResumeRecord" style="display:none;">
+            <span>▶️ Gravar Próximo (Espaço)</span>
+          </button>
+          <button class="btn-cta-rec btn-rec-stop" id="btnStopRecord" style="display:none;">
+            <span>✅ Finalizar & Unir Vídeo</span>
+          </button>
+          <button type="button" class="btn-toolbar-trash" id="btnDiscardAllTakes" onclick="promptDiscardAllTakes()" title="Descartar gravação e recomeçar" style="display:none;">
+            <span>🗑️</span>
+          </button>
+        </div>
+        <div
+          style="font-size:11px; color:var(--text-dim); display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; text-align:center;">
+          <span
+            style="color:var(--primary); font-weight:700; background:rgba(249,115,22,0.15); padding:3px 10px; border-radius:12px; border:1px solid var(--primary-glow);">⚡
+            Atalho Global: [F9] Gravar / Parar • [F8] Pausar Trecho</span>
+          <span style="color:var(--text-dim);">•</span>
+          <span>No Navegador: <strong>[Espaço]</strong> Iniciar/Pausar • <strong>[R]</strong> Gravar/Finalizar</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: Teleprompter & Custom Script Builder -->
+    <aside class="panel-card" id="prompterPanel">
+      <div class="panel-header">
+        <span class="panel-title">🎙️ Roteiro & Teleprompter</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button class="btn-mini-add" id="btnOpenNewScriptModal" title="Criar Novo Roteiro">+</button>
+          <button class="tab-btn" id="btnClosePrompter" title="Fechar Roteiro"
+            style="padding:4px 8px; font-size:14px; line-height:1; color:var(--text-muted);">✕</button>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="form-label">Selecionar Roteiro:</label>
+          <select class="form-control" id="scriptSelector"></select>
+        </div>
+
+        <div class="prompter-toolbar">
+          <button class="tab-btn" id="btnPrompterToggle"
+            style="background:var(--primary); color:#fff; padding:6px 14px;">▶️ Rolar</button>
+          <button class="tab-btn" id="btnPrompterTop" style="padding:6px 10px;">⏮️ Topo</button>
+          <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted);">
+            <span>Velocidade:</span>
+            <input type="range" id="prompterSpeed" min="1" max="5" value="2" style="width:50px;">
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted);">
+            <span>Fonte:</span>
+            <input type="range" id="prompterFontSize" min="14" max="28" value="18" style="width:50px;">
+          </div>
+        </div>
+
+        <div class="prompter-scroll-box" id="prompterScrollBox">
+          <div class="prompter-text-body" id="prompterTextBody">
+            <!-- Dynamic Content Loaded from Prompter Module -->
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- MODAL: Custom Script Builder -->
+  <div class="modal-backdrop" id="modalNewScript">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">✨ Criar Novo Roteiro</span>
+        <button class="tab-btn" id="btnCloseScriptModal" style="padding:4px 8px; font-size:14px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Título do Roteiro:</label>
+          <input type="text" class="form-control" id="newScriptTitle" placeholder="Ex: Roteiro 11 — Fechamento Rápido">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🎣 Gancho Inicial (0 a 3 segundos):</label>
+          <input type="text" class="form-control" id="newScriptHook"
+            placeholder="A pergunta ou frase de impacto que prende a atenção...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">📊 Dado ou Estudo de Autoridade:</label>
+          <textarea class="form-control" id="newScriptData" rows="3" placeholder="Estudos comprovam que..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">💡 Solução com o ZapRun:</label>
+          <textarea class="form-control" id="newScriptSol" rows="3"
+            placeholder="Com o ZapRun você resolve isso..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🎯 Chamada para Ação (CTA):</label>
+          <input type="text" class="form-control" id="newScriptCta"
+            placeholder="Ex: Comente ZAPRUN para receber o teste grátis!">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="tab-btn" id="btnSaveNewScript"
+          style="background:var(--primary); color:#fff; padding:10px 18px; font-weight:700;">💾 Salvar Roteiro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Preview & Download Final Video -->
+  <div class="modal-backdrop" id="modalPreview">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">🎉 Gravação Finalizada com Sucesso!</span>
+        <button class="tab-btn" id="btnClosePreview" style="padding:4px 8px; font-size:14px;">✕</button>
+      </div>
+      <div class="modal-body" style="align-items:center;">
+        <video id="previewPlayer" controls
+          style="max-height:50vh; width:auto; border-radius:10px; border:1px solid var(--border-subtle); background:#000;"></video>
+      </div>
+      <div class="modal-footer">
+        <a id="downloadVideoBtn" class="tab-btn"
+          style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; text-decoration:none; padding:12px 24px; font-weight:700; border-radius:8px;"
+          download="MeuVideoGravado.webm">
+          ⬇️ Baixar Vídeo WebM HD
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Confirmation to Discard All Takes -->
+  <div class="modal-backdrop" id="modalConfirmDiscard">
+    <div class="modal-content" style="max-width:360px; text-align:center; padding:24px 20px;">
+      <div style="font-size:32px; margin-bottom:8px;">🗑️</div>
+      <h3 style="font-size:15px; font-weight:700; margin-bottom:6px; color:#ffffff;">Descartar Gravação?</h3>
+      <p style="font-size:12.5px; color:var(--text-muted); line-height:1.4; margin-bottom:18px;">
+        Todos os trechos gravados serão excluídos e você começará do zero.
+      </p>
+      <div style="display:flex; gap:8px; justify-content:center;">
+        <button type="button" class="tab-btn" id="btnCancelDiscard" style="padding:8px 16px; border:1px solid var(--border-medium); border-radius:8px; color:var(--text-muted); font-size:12px;">Cancelar</button>
+        <button type="button" class="tab-btn" id="btnConfirmDiscard" style="background:var(--danger); color:#fff; padding:8px 16px; border-radius:8px; font-weight:700; font-size:12px; border:none;">Sim, Descartar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Merging Takes Progress Indicator -->
+  <div class="modal-backdrop" id="modalMergingTakes">
+    <div class="modal-content" style="max-width:340px; text-align:center; padding:24px 20px;">
+      <div class="spinner-merge" style="margin:0 auto 12px auto;"></div>
+      <h3 style="font-size:15px; font-weight:700; margin-bottom:6px; color:#ffffff;">Unindo Vídeo...</h3>
+      <p id="mergeProgressText" style="font-size:12px; color:var(--text-muted);">Processando trecho 1 de 2...</p>
+    </div>
+  </div>
+
+  <!-- Application Logic (Self-Contained & Resilient) -->
+  <script>
+    const DEFAULT_SCRIPTS = [
+      { id: '1', titulo: "Roteiro 01 — Atendimento Centralizado & Multiatendentes", hook: "Sua empresa ainda perde vendas porque cada vendedor usa um WhatsApp pessoal diferente?", dado: "Segundo pesquisa da Harvard Business Review, responder um lead nos primeiros 5 minutos aumenta as chances de qualificação em quase quatrocentas vezes.", solucao: "Com o ZapRun, toda a sua equipe atende no mesmo número oficial do WhatsApp, com painel centralizado no computador e distribuição automática de chamados.", cta: "Comente ZAPRUN aqui embaixo para testar a plataforma gratuitamente!" },
+      { id: '2', titulo: "Roteiro 02 — Vendas no Piloto Automático (24/7)", hook: "Quantos clientes chegam no seu WhatsApp fora do horário comercial e ficam sem resposta?", dado: "Estudos da Salesforce comprovam que empresas com atendimento automatizado 24 horas convertem até trinta e oito por cento mais vendas que a concorrência.", solucao: "O ZapRun mantém robôs inteligentes qualificando leads, enviando propostas e agendando reuniões enquanto você dorme ou cuida da gestão do seu negócio.", cta: "Quer ver funcionando na prática? Comente ZAPRUN para receber a demonstração!" },
+      { id: '3', titulo: "Roteiro 03 — Fim das Mensagens Perdidas", hook: "Você já perdeu um cliente importante porque a conversa sumiu no meio de centenas de mensagens?", dado: "Pesquisas de mercado indicam que mais de setenta por cento dos clientes desistem da compra se não recebem retorno no mesmo dia.", solucao: "Com o sistema de tags, etiquetas coloridas e histórico do ZapRun, você sabe exatamente o status de cada negociação sem esquecer ninguém.", cta: "Elimine o caos no seu WhatsApp hoje mesmo: comente ZAPRUN!" },
+      { id: '4', titulo: "Roteiro 04 — Disparos em Massa Sem Bloqueio", hook: "Fazer disparo em massa manual no WhatsApp tá travando a sua operação e gerando bloqueios?", dado: "Mais de setenta e dois por cento dos consumidores preferem receber ofertas e promoções diretamente no WhatsApp do que por e-mail.", solucao: "O ZapRun possui tecnologia de campanhas inteligentes com intervalos humanos para enviar promoções para toda a sua base com segurança.", cta: "Ative suas campanhas de WhatsApp: comente ZAPRUN e comece agora!" },
+      { id: '5', titulo: "Roteiro 05 — Blindagem da Carteira de Clientes", hook: "Quem é o verdadeiro dono dos clientes da sua empresa hoje?", dado: "Estudos da Gartner mostram que mais de sessenta por cento das empresas perdem o contato com clientes quando um vendedor sai levando as conversas no chip pessoal.", solucao: "Sua base de clientes é seu maior patrimônio. Com o ZapRun, todas as conversas ficam salvas com segurança na nuvem da empresa, com controle total de permissões.", cta: "Proteja a carteira da sua empresa: comente ZAPRUN!" },
+      { id: '6', titulo: "Roteiro 06 — Fuga de Clientes por Demora", hook: "Quanto tempo o seu cliente aguenta esperar no WhatsApp antes de desistir?", dado: "O relatório global da Zendesk aponta que mais de cinquenta e sete por cento dos consumidores trocam de empresa após apenas UMA experiência de atendimento demorado.", solucao: "A tolerância na internet é zero. O ZapRun organiza suas conversas em filas por departamento com transferência imediata entre setores.", cta: "Zere a espera no atendimento: comente ZAPRUN para testar grátis!" },
+      { id: '7', titulo: "Roteiro 07 — Desistência Precoce no Follow-up", hook: "Quantas propostas enviadas sumiram no seu WhatsApp esse mês?", dado: "Estudos da Invesp mostram que quarenta e quatro por cento dos vendedores desistem no primeiro contato, mas oitenta por cento das vendas fecham entre o quinto e o décimo segundo contato!", solucao: "O dinheiro tá no acompanhamento. Com o funil Kanban do ZapRun direto no WhatsApp, você acompanha cada cliente de proposta enviada até o pagamento.", cta: "Não perca mais nenhuma venda no funil: comente ZAPRUN!" },
+      { id: '8', titulo: "Roteiro 08 — Escala Sem Inchar Equipe", hook: "Você NÃO precisa contratar mais gente para dobrar o atendimento da sua empresa!", dado: "Pesquisas da McKinsey comprovam que processos automatizados e centralização aumentam em até trezentos por cento a capacidade de atendimento de cada operador.", solucao: "No ZapRun, duas pessoas atendem como dez com distribuição automática, painel integrado no computador e histórico compartilhado.", cta: "Escale suas vendas sem inchar a folha: comente ZAPRUN!" },
+      { id: '9', titulo: "Roteiro 09 — Desperdício de Tráfego Pago", hook: "Se o seu WhatsApp tem mais de cinquenta mensagens não lidas, você tá no prejuízo!", dado: "Estudos de conversão da HubSpot mostram que até trinta por cento do investimento em anúncios é jogado fora porque as empresas demoram para atender os leads gerados.", solucao: "Não adianta investir em tráfego se o balde tá furado. O ZapRun faz a triagem instantânea de cem por cento dos leads que chegam dos seus anúncios de Instagram e Facebook.", cta: "Pare de queimar dinheiro em anúncios: comente ZAPRUN!" },
+      { id: '10', titulo: "Roteiro 10 — Gestão por Métricas Reais", hook: "Você sabe exatamente quem é o melhor e o pior atendente da sua empresa hoje?", dado: "Empresas que monitoram tempo de resposta e taxa de conversão por vendedor aumentam em média mais de trinta por cento o faturamento nos primeiros noventa dias.", solucao: "O ZapRun entrega relatórios completos em tempo real: tempo de fila, quantidade de chamados e conversões de cada vendedor direto no seu painel.", cta: "Gerencie seu time com dados reais: comente ZAPRUN e teste grátis!" }
+    ];
+
+    function getStoredScripts() {
+      const stored = localStorage.getItem('csdigital_scripts');
+      if (stored) { try { return JSON.parse(stored); } catch { } }
+      return DEFAULT_SCRIPTS;
+    }
+
+    function saveStoredScripts(scripts) {
+      localStorage.setItem('csdigital_scripts', JSON.stringify(scripts));
+    }
+
+    let allScripts = getStoredScripts();
+
+    // ── STATE VARIABLES ──
+    let camStream = null;
+    let screenStream = null;
+    let audioStream = null;
+    let audioContext = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordStartTime = 0;
+    let recordTimerInterval = null;
+    let isRecordingPaused = false;
+    let pausedDuration = 0;
+    let pauseStartTime = 0;
+
+    let savedCameraId = null;
+    let savedMicId = null;
+
+    // Adjustments
+    let currentLayout = 'split-vertical';
+    let camZoom = 1.0;
+    let camPanX = 0.5;
+    let camPanY = 0.5;
+    let camBrightness = 100;
+    let camContrast = 100;
+    let camSaturation = 100;
+    let isCamMirrored = true;
+
+    let screenZoom = 1.0;
+    let screenPanX = 0.5;
+    let screenPanY = 0.5;
+
+    let splitRatio = 0.5;
+    let dividerColor = '#f97316';
+    let pipSize = 0.32;
+    let aspectRatio = '9:16';
+    let videoQuality = '1080p';
+    let previewScale = 1.0;
+
+    // Prompter State
+    let isPrompterScrolling = false;
+    let prompterScrollTimer = null;
+
+    const rawCam = document.getElementById('rawCam');
+    const rawScreen = document.getElementById('rawScreen');
+    const studioCanvas = document.getElementById('studioCanvas');
+    const ctx = studioCanvas.getContext('2d', { alpha: false, desynchronized: true });
+
+    // ── TABS NAVIGATION ──
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const target = document.getElementById(btn.dataset.tab);
+        if (target) target.classList.add('active');
+      });
+    });
+
+    // ── POPULATE SCRIPTS SELECTOR ──
+    const scriptSelector = document.getElementById('scriptSelector');
+    function refreshScriptSelector(selectedId = '2') {
+      scriptSelector.innerHTML = allScripts.map(s => `<option value="${s.id}">${s.titulo}</option>`).join('');
+      scriptSelector.value = selectedId;
+      renderActiveScript(selectedId);
+    }
+
+    function renderActiveScript(id) {
+      const s = allScripts.find(x => x.id === id) || allScripts[0];
+      if (!s) return;
+      document.getElementById('prompterTextBody').innerHTML = `
+        <div class="script-block block-hook">
+          <span class="block-badge badge-hook">🎣 Gancho (0 a 3s)</span>
+          <p><strong>"${s.hook}"</strong></p>
+        </div>
+        <div class="script-block block-data">
+          <span class="block-badge badge-data">📊 Dado / Autoridade</span>
+          <p>"${s.dado}"</p>
+        </div>
+        <div class="script-block block-sol">
+          <span class="block-badge badge-sol">💡 Solução ZapRun</span>
+          <p>"${s.solucao}"</p>
+        </div>
+        <div class="script-block block-cta">
+          <span class="block-badge badge-cta">🎯 Chamada para Ação</span>
+          <p><strong>"${s.cta}"</strong></p>
+        </div>
+      `;
+      document.getElementById('prompterScrollBox').scrollTop = 0;
+    }
+
+    scriptSelector.addEventListener('change', (e) => {
+      renderActiveScript(e.target.value);
+    });
+
+    refreshScriptSelector('2');
+
+    // ── PROMPTER SCROLL CONTROLS ──
+    const btnPrompterToggle = document.getElementById('btnPrompterToggle');
+    const btnPrompterTop = document.getElementById('btnPrompterTop');
+    const prompterScrollBox = document.getElementById('prompterScrollBox');
+    const prompterSpeed = document.getElementById('prompterSpeed');
+    const prompterFontSize = document.getElementById('prompterFontSize');
+
+    btnPrompterToggle.addEventListener('click', () => {
+      isPrompterScrolling = !isPrompterScrolling;
+      if (isPrompterScrolling) {
+        btnPrompterToggle.innerHTML = '⏸️ Pausar';
+        startPrompterAutoScroll();
+      } else {
+        btnPrompterToggle.innerHTML = '▶️ Rolar';
+        clearInterval(prompterScrollTimer);
+      }
+    });
+
+    btnPrompterTop.addEventListener('click', () => {
+      prompterScrollBox.scrollTop = 0;
+    });
+
+    prompterFontSize.addEventListener('input', (e) => {
+      document.getElementById('prompterTextBody').style.fontSize = e.target.value + 'px';
+    });
+
+    function startPrompterAutoScroll() {
+      clearInterval(prompterScrollTimer);
+      prompterScrollTimer = setInterval(() => {
+        const speed = parseInt(prompterSpeed.value, 10);
+        prompterScrollBox.scrollTop += speed * 0.9;
+      }, 30);
+    }
+
+    // ── PROMPTER PANEL TOGGLE ──
+    const mainLayout = document.getElementById('mainLayout');
+    const btnTogglePrompterView = document.getElementById('btnTogglePrompterView');
+    const btnClosePrompter = document.getElementById('btnClosePrompter');
+
+    function togglePrompter(show) {
+      if (show === undefined) mainLayout.classList.toggle('no-prompter');
+      else if (show) mainLayout.classList.remove('no-prompter');
+      else mainLayout.classList.add('no-prompter');
+      const isHidden = mainLayout.classList.contains('no-prompter');
+      btnTogglePrompterView.style.background = isHidden ? 'rgba(249, 115, 22, 0.2)' : 'rgba(255,255,255,0.06)';
+      btnTogglePrompterView.style.borderColor = isHidden ? 'var(--primary)' : 'var(--border-subtle)';
+      btnTogglePrompterView.querySelector('span').innerText = isHidden ? '📜 Mostrar Roteiro' : '📜 Roteiro';
+      localStorage.setItem('csdigital_show_prompter', isHidden ? 'false' : 'true');
+    }
+
+    btnTogglePrompterView.addEventListener('click', () => togglePrompter());
+    btnClosePrompter.addEventListener('click', () => togglePrompter(false));
+    if (localStorage.getItem('csdigital_show_prompter') === 'false') togglePrompter(false);
+
+    // ── MODAL NEW SCRIPT ──
+    const modalNewScript = document.getElementById('modalNewScript');
+    document.getElementById('btnOpenNewScriptModal').addEventListener('click', () => { modalNewScript.classList.add('active'); });
+    document.getElementById('btnCloseScriptModal').addEventListener('click', () => { modalNewScript.classList.remove('active'); });
+    document.getElementById('btnSaveNewScript').addEventListener('click', () => {
+      const title = document.getElementById('newScriptTitle').value.trim();
+      const hook = document.getElementById('newScriptHook').value.trim();
+      const dado = document.getElementById('newScriptData').value.trim();
+      const sol = document.getElementById('newScriptSol').value.trim();
+      const cta = document.getElementById('newScriptCta').value.trim();
+      if (!title || !hook) { alert('Preencha pelo menos o título e o gancho.'); return; }
+      const newId = String(Date.now());
+      allScripts.push({ id: newId, titulo: title, hook, dado, solucao: sol, cta });
+      saveStoredScripts(allScripts);
+      modalNewScript.classList.remove('active');
+      refreshScriptSelector(newId);
+    });
+
+    // ── DEVICE SELECTION & ENUMERATION ──
+    const cameraSelect = document.getElementById('cameraSelect');
+    const micSelect = document.getElementById('micSelect');
+    const btnToggleCam = document.getElementById('btnToggleCam');
+    const btnToggleMic = document.getElementById('btnToggleMic');
+    const btnRefreshMics = document.getElementById('btnRefreshMics');
+    const micVolSlider = document.getElementById('micVolSlider');
+    const micVolVal = document.getElementById('micVolVal');
+
+    async function listDevices() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter(d => d.kind === 'videoinput');
+        const audioInputs = devices.filter(d => d.kind === 'audioinput');
+
+        const targetCam = savedCameraId || (cameraSelect ? cameraSelect.value : '');
+        const targetMic = savedMicId || (micSelect ? micSelect.value : '');
+
+        if (videoInputs.length > 0 && cameraSelect) {
+          cameraSelect.innerHTML = videoInputs.map((d, i) =>
+            `<option value="${d.deviceId}" ${d.deviceId === targetCam ? 'selected' : ''}>${d.label || `Câmera ${i + 1}`}</option>`
+          ).join('');
+          if (targetCam && videoInputs.some(d => d.deviceId === targetCam)) {
+            cameraSelect.value = targetCam;
+          }
+        } else if (cameraSelect) {
+          cameraSelect.innerHTML = `<option value="">Nenhuma câmera detectada</option>`;
+        }
+
+        if (audioInputs.length > 0 && micSelect) {
+          micSelect.innerHTML = audioInputs.map((d, i) =>
+            `<option value="${d.deviceId}" ${d.deviceId === targetMic ? 'selected' : ''}>${d.label || `Microfone ${i + 1}`}</option>`
+          ).join('');
+          if (targetMic && audioInputs.some(d => d.deviceId === targetMic)) {
+            micSelect.value = targetMic;
+          }
+        } else if (micSelect) {
+          micSelect.innerHTML = `<option value="">Nenhum microfone detectado</option>`;
+        }
+      } catch (err) {
+        console.warn('Erro listando dispositivos:', err);
+      }
+    }
+
+    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+      navigator.mediaDevices.addEventListener('devicechange', async () => {
+        await listDevices();
+      });
+    }
+
+    if (btnRefreshMics) {
+      btnRefreshMics.addEventListener('click', async () => {
+        btnRefreshMics.innerText = '⏳ Buscando...';
+        try {
+          const s = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => null);
+          if (s) s.getTracks().forEach(t => t.stop());
+        } catch (e) {}
+        await listDevices();
+        setTimeout(() => { btnRefreshMics.innerText = '🔄 Atualizar'; }, 600);
+      });
+    }
+
+    async function startCamera(deviceId) {
+      if (camStream) {
+        camStream.getTracks().forEach(t => t.stop());
+        camStream = null;
+      }
+      try {
+        let videoConstraints = {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 60, max: 60 }
+        };
+        if (deviceId) {
+          videoConstraints.deviceId = { ideal: deviceId };
+        }
+
+        try {
+          camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+        } catch (strictErr) {
+          console.warn('Tentando câmera com constraints básicas:', strictErr);
+          camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        }
+
+        if (rawCam) {
+          rawCam.srcObject = camStream;
+          rawCam.onloadedmetadata = () => {
+            rawCam.play().catch(() => {});
+          };
+          await rawCam.play().catch(() => {});
+        }
+
+        if (btnToggleCam) {
+          btnToggleCam.classList.add('active');
+          const span = btnToggleCam.querySelector('span:first-child');
+          if (span) span.innerText = '📷 Câmera Ativa';
+        }
+
+        await listDevices();
+
+        const activeTrack = camStream ? camStream.getVideoTracks()[0] : null;
+        const activeSettings = activeTrack ? activeTrack.getSettings() : null;
+        if (activeSettings && activeSettings.deviceId && cameraSelect) {
+          cameraSelect.value = activeSettings.deviceId;
+          savedCameraId = activeSettings.deviceId;
+        }
+      } catch (err) {
+        console.error('Erro ao iniciar câmera:', err);
+        if (btnToggleCam) {
+          btnToggleCam.classList.remove('active');
+          const span = btnToggleCam.querySelector('span:first-child');
+          if (span) span.innerText = '📷 Câmera Desativada (Clique p/ Ativar)';
+        }
+      }
+    }
+
+    if (cameraSelect) {
+      cameraSelect.addEventListener('change', () => {
+        if (cameraSelect.value) {
+          savedCameraId = cameraSelect.value;
+          startCamera(cameraSelect.value);
+        }
+      });
+    }
+
+    if (btnToggleCam) {
+      btnToggleCam.addEventListener('click', async () => {
+        if (camStream) {
+          camStream.getTracks().forEach(t => t.stop());
+          camStream = null;
+          if (rawCam) rawCam.srcObject = null;
+          btnToggleCam.classList.remove('active');
+          btnToggleCam.querySelector('span:first-child').innerText = '📷 Câmera Desativada (Clique p/ Ativar)';
+        } else {
+          await startCamera(cameraSelect.value || undefined);
+        }
+      });
+    }
+
+    // ── SCREEN SHARE ──
+    const btnToggleScreen = document.getElementById('btnToggleScreen');
+    if (btnToggleScreen) {
+      btnToggleScreen.addEventListener('click', async () => {
+        if (screenStream) {
+          screenStream.getTracks().forEach(t => t.stop());
+          screenStream = null;
+          rawScreen.srcObject = null;
+          btnToggleScreen.classList.remove('active');
+        } else {
+          try {
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+              video: {
+                frameRate: { ideal: 60, max: 60 },
+                cursor: 'always'
+              },
+              audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+                channelCount: 2
+              }
+            });
+            rawScreen.srcObject = screenStream;
+            rawScreen.onloadedmetadata = () => { rawScreen.play().catch(() => { }); };
+            await rawScreen.play().catch(() => { });
+            btnToggleScreen.classList.add('active');
+
+            screenStream.getVideoTracks()[0].onended = () => {
+              screenStream = null;
+              rawScreen.srcObject = null;
+              btnToggleScreen.classList.remove('active');
+            };
+          } catch (err) {
+            console.log('Compartilhamento cancelado:', err);
+          }
+        }
+      });
+    }
+
+    // ── AUDIO & VU METER ──
+    const vuFill = document.getElementById('vuFill');
+    const vuPercent = document.getElementById('vuPercent');
+
+    async function startMicrophone(deviceId) {
+      if (audioStream) {
+        audioStream.getTracks().forEach(t => t.stop());
+        audioStream = null;
+      }
+      try {
+        const audioConstraints = {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        };
+        if (deviceId) {
+          audioConstraints.deviceId = { ideal: deviceId };
+        }
+
+        try {
+          audioStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+        } catch (exactErr) {
+          console.warn('Tentando microfone padrão:', exactErr);
+          audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+
+        setupAudioAnalyzer(audioStream);
+
+        if (btnToggleMic) {
+          btnToggleMic.classList.add('active');
+          const span = btnToggleMic.querySelector('span:first-child');
+          if (span) span.innerText = '🎙️ Microfone Ativo';
+        }
+
+        await listDevices();
+
+        const activeTrack = audioStream.getAudioTracks()[0];
+        const activeSettings = activeTrack ? activeTrack.getSettings() : null;
+        if (activeSettings && activeSettings.deviceId && micSelect) {
+          micSelect.value = activeSettings.deviceId;
+          savedMicId = activeSettings.deviceId;
+        }
+      } catch (err) {
+        console.warn('Erro ao conectar microfone:', err);
+        if (btnToggleMic) {
+          btnToggleMic.classList.remove('active');
+          const span = btnToggleMic.querySelector('span:first-child');
+          if (span) span.innerText = '🎙️ Microfone Desativado (Clique p/ Ativar)';
+        }
+      }
+    }
+
+    function setupAudioAnalyzer(stream) {
+      if (audioContext) {
+        try { audioContext.close(); } catch (e) {}
+        audioContext = null;
+      }
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.4;
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        const buffer = new Uint8Array(analyser.frequencyBinCount);
+        if (window.vuInterval) clearInterval(window.vuInterval);
+        window.vuInterval = setInterval(() => {
+          if (!audioStream) {
+            if (vuFill) vuFill.style.width = '0%';
+            if (vuPercent) vuPercent.innerText = '0%';
+            return;
+          }
+          analyser.getByteFrequencyData(buffer);
+          let total = 0;
+          for (let i = 0; i < buffer.length; i++) total += buffer[i];
+          let avg = total / buffer.length;
+          let p = Math.min(100, Math.round((avg / 100) * 100));
+          if (vuFill) vuFill.style.width = p + '%';
+          if (vuPercent) vuPercent.innerText = p + '%';
+        }, 50);
+      } catch (e) {
+        console.warn('Erro configurando VU analyzer:', e);
+      }
+    }
+
+    if (micSelect) {
+      micSelect.addEventListener('change', () => {
+        if (micSelect.value) {
+          savedMicId = micSelect.value;
+          startMicrophone(micSelect.value);
+        }
+      });
+    }
+
+    if (btnToggleMic) {
+      btnToggleMic.addEventListener('click', async () => {
+        if (audioStream) {
+          audioStream.getTracks().forEach(t => t.stop());
+          audioStream = null;
+          btnToggleMic.classList.remove('active');
+          const span = btnToggleMic.querySelector('span:first-child');
+          if (span) span.innerText = '🎙️ Microfone Desativado (Clique p/ Ativar)';
+          if (vuFill) vuFill.style.width = '0%';
+          if (vuPercent) vuPercent.innerText = '0%';
+        } else {
+          await startMicrophone(micSelect.value || undefined);
+        }
+      });
+    }
+
+    if (micVolSlider && micVolVal) {
+      micVolSlider.addEventListener('input', (e) => {
+        micVolVal.innerText = e.target.value + '%';
+      });
+    }
+
+    // ── CAMERA & SCREEN LIVE ADJUSTMENT CONTROLS ──
+    const camZoomSlider = document.getElementById('camZoomSlider');
+    const camZoomVal = document.getElementById('camZoomVal');
+    camZoomSlider.addEventListener('input', (e) => {
+      camZoom = parseFloat(e.target.value);
+      camZoomVal.innerText = camZoom.toFixed(2) + 'x';
+    });
+
+    const camPanXSlider = document.getElementById('camPanXSlider');
+    const camPanXVal = document.getElementById('camPanXVal');
+    if (camPanXSlider) {
+      camPanXSlider.addEventListener('input', (e) => {
+        camPanX = parseInt(e.target.value, 10) / 100;
+        if (camPanXVal) camPanXVal.innerText = e.target.value + '%';
+      });
+    }
+
+    const camPanYSlider = document.getElementById('camPanYSlider');
+    const camPanYVal = document.getElementById('camPanYVal');
+    camPanYSlider.addEventListener('input', (e) => {
+      camPanY = parseInt(e.target.value, 10) / 100;
+      camPanYVal.innerText = e.target.value + '%';
+    });
+
+    const camBrightSlider = document.getElementById('camBrightSlider');
+    const camBrightVal = document.getElementById('camBrightVal');
+    if (camBrightSlider) {
+      camBrightSlider.addEventListener('input', (e) => {
+        camBrightness = parseInt(e.target.value, 10);
+        if (camBrightVal) camBrightVal.innerText = camBrightness + '%';
+      });
+    }
+
+    const camContrastSlider = document.getElementById('camContrastSlider');
+    const camContrastVal = document.getElementById('camContrastVal');
+    if (camContrastSlider) {
+      camContrastSlider.addEventListener('input', (e) => {
+        camContrast = parseInt(e.target.value, 10);
+        if (camContrastVal) camContrastVal.innerText = camContrast + '%';
+      });
+    }
+
+    const camSatSlider = document.getElementById('camSatSlider');
+    const camSatVal = document.getElementById('camSatVal');
+    if (camSatSlider) {
+      camSatSlider.addEventListener('input', (e) => {
+        camSaturation = parseInt(e.target.value, 10);
+        if (camSatVal) camSatVal.innerText = camSaturation + '%';
+      });
+    }
+
+    const camMirrorSelect = document.getElementById('camMirrorSelect');
+    camMirrorSelect.addEventListener('change', (e) => {
+      isCamMirrored = e.target.value === 'true';
+    });
+
+    const screenZoomSlider = document.getElementById('screenZoomSlider');
+    const screenZoomVal = document.getElementById('screenZoomVal');
+    screenZoomSlider.addEventListener('input', (e) => {
+      screenZoom = parseFloat(e.target.value);
+      screenZoomVal.innerText = screenZoom.toFixed(2) + 'x';
+    });
+
+    const screenPanXSlider = document.getElementById('screenPanXSlider');
+    const screenPanXVal = document.getElementById('screenPanXVal');
+    screenPanXSlider.addEventListener('input', (e) => {
+      screenPanX = parseInt(e.target.value, 10) / 100;
+      screenPanXVal.innerText = e.target.value + '%';
+    });
+
+    const screenPanYSlider = document.getElementById('screenPanYSlider');
+    const screenPanYVal = document.getElementById('screenPanYVal');
+    screenPanYSlider.addEventListener('input', (e) => {
+      screenPanY = parseInt(e.target.value, 10) / 100;
+      screenPanYVal.innerText = e.target.value + '%';
+    });
+
+    const splitRatioSlider = document.getElementById('splitRatioSlider');
+    const splitRatioVal = document.getElementById('splitRatioVal');
+    splitRatioSlider.addEventListener('input', (e) => {
+      splitRatio = parseInt(e.target.value, 10) / 100;
+      splitRatioVal.innerText = `${e.target.value}/${100 - parseInt(e.target.value, 10)}`;
+    });
+
+    const pipSizeSlider = document.getElementById('pipSizeSlider');
+    const pipSizeVal = document.getElementById('pipSizeVal');
+    pipSizeSlider.addEventListener('input', (e) => {
+      pipSize = parseInt(e.target.value, 10) / 100;
+      pipSizeVal.innerText = e.target.value + '%';
+    });
+
+    const dividerColorSelect = document.getElementById('dividerColorSelect');
+    dividerColorSelect.addEventListener('change', (e) => {
+      dividerColor = e.target.value;
+    });
+
+    const aspectSelect = document.getElementById('aspectSelect');
+    aspectSelect.addEventListener('change', (e) => {
+      aspectRatio = e.target.value;
+      updateResolution();
+    });
+
+    function setVideoQuality(q) {
+      videoQuality = q;
+      document.querySelectorAll('.btn-quality-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.quality === q);
+      });
+      const badgeSources = document.getElementById('qualityBadgeValSources');
+      if (badgeSources) {
+        if (q === '1080p') badgeSources.innerText = '1080p FULL HD';
+        if (q === '2k') badgeSources.innerText = '2K QUAD HD';
+        if (q === '4k') badgeSources.innerText = '4K ULTRA HD';
+      }
+      updateResolution();
+    }
+
+    document.querySelectorAll('.btn-quality-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setVideoQuality(btn.dataset.quality);
+      });
+    });
+
+    function updateResolution() {
+      let baseW = 1080;
+      let baseH = 1920;
+
+      if (videoQuality === '2k') {
+        baseW = 1440;
+        baseH = 2560;
+      } else if (videoQuality === '4k') {
+        baseW = 2160;
+        baseH = 3840;
+      }
+
+      if (aspectRatio === '9:16') {
+        studioCanvas.width = baseW;
+        studioCanvas.height = baseH;
+      } else if (aspectRatio === '16:9') {
+        studioCanvas.width = baseH;
+        studioCanvas.height = baseW;
+      } else if (aspectRatio === '1:1') {
+        studioCanvas.width = baseW;
+        studioCanvas.height = baseW;
+      }
+      updateStageContainerAspect();
+    }
+
+    function updateStageContainerAspect() {
+      const container = document.getElementById('canvasStageContainer');
+      if (aspectRatio === '9:16') {
+        container.style.aspectRatio = '9 / 16';
+        container.style.maxHeight = '72vh';
+        container.style.maxWidth = 'calc(72vh * 9 / 16)';
+      } else if (aspectRatio === '16:9') {
+        container.style.aspectRatio = '16 / 9';
+        container.style.maxWidth = '100%';
+        container.style.maxHeight = '50vh';
+      } else if (aspectRatio === '1:1') {
+        container.style.aspectRatio = '1 / 1';
+        container.style.maxHeight = '65vh';
+        container.style.maxWidth = '65vh';
+      }
+    }
+    updateResolution();
+
+    document.querySelectorAll('.btn-layout').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-layout').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentLayout = btn.dataset.layout;
+      });
+    });
+
+    // Preview Scale Controls
+    const previewScaleVal = document.getElementById('previewScaleVal');
+    const btnZoomInPreview = document.getElementById('btnZoomInPreview');
+    const btnZoomOutPreview = document.getElementById('btnZoomOutPreview');
+    const btnResetPreview = document.getElementById('btnResetPreview');
+
+    function updatePreviewScale() {
+      studioCanvas.style.transform = `scale(${previewScale})`;
+      studioCanvas.style.transformOrigin = 'center center';
+      if (previewScaleVal) previewScaleVal.innerText = Math.round(previewScale * 100) + '%';
+    }
+
+    btnZoomInPreview.addEventListener('click', () => {
+      previewScale = Math.min(1.5, previewScale + 0.1);
+      updatePreviewScale();
+    });
+
+    btnZoomOutPreview.addEventListener('click', () => {
+      previewScale = Math.max(0.6, previewScale - 0.1);
+      updatePreviewScale();
+    });
+
+    btnResetPreview.addEventListener('click', () => {
+      previewScale = 1.0;
+      updatePreviewScale();
+    });
+
+    // ── QUADROS PRESETS (SALVAR & GERENCIAR NOMES DE QUADROS) ──
+    const DEFAULT_QUADROS = [
+      '🧠 INTELIGÊNCIA ARTIFICIAL',
+      '💡 DICA RÁPIDA DE IA',
+      '⚡ DEFENDENDO A BYD 🚗'
+    ];
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function getSavedQuadros() {
+      try {
+        const stored = localStorage.getItem('csdigital_saved_quadros_v2');
+        if (stored) {
+          const list = JSON.parse(stored);
+          if (Array.isArray(list) && list.length > 0) return list;
+        }
+      } catch (e) {}
+      return [...DEFAULT_QUADROS];
+    }
+
+    function saveQuadrosList(list) {
+      localStorage.setItem('csdigital_saved_quadros_v2', JSON.stringify(list));
+      renderQuadrosPresets();
+    }
+
+    const presetQuadroSelect = document.getElementById('presetQuadroSelect');
+    const btnSaveQuadroPreset = document.getElementById('btnSaveQuadroPreset');
+    const btnDeleteQuadroPreset = document.getElementById('btnDeleteQuadroPreset');
+    const quadroChipsContainer = document.getElementById('quadroChipsContainer');
+
+    function renderQuadrosPresets() {
+      const list = getSavedQuadros();
+      const bannerInput = document.getElementById('bannerTextInput');
+      const currentVal = bannerInput ? bannerInput.value.trim() : '';
+
+      if (presetQuadroSelect) {
+        presetQuadroSelect.innerHTML = '<option value="">📁 Escolher quadro salvo...</option>' + 
+          list.map(q => `<option value="${escapeHtml(q)}" ${q === currentVal ? 'selected' : ''}>${escapeHtml(q)}</option>`).join('');
+        if (btnDeleteQuadroPreset) {
+          btnDeleteQuadroPreset.disabled = !presetQuadroSelect.value;
+        }
+      }
+
+      if (quadroChipsContainer) {
+        quadroChipsContainer.innerHTML = list.slice(0, 8).map(q => 
+          `<button type="button" class="quadro-chip ${q === currentVal ? 'active' : ''}" data-quadro="${escapeHtml(q)}" title="${escapeHtml(q)}">${escapeHtml(q)}</button>`
+        ).join('');
+
+        quadroChipsContainer.querySelectorAll('.quadro-chip').forEach(chip => {
+          chip.addEventListener('click', () => {
+            const quadro = chip.dataset.quadro;
+            if (bannerInput) {
+              bannerInput.value = quadro;
+              bannerInput.dispatchEvent(new Event('input'));
+            }
+            if (presetQuadroSelect) presetQuadroSelect.value = quadro;
+            if (btnDeleteQuadroPreset) btnDeleteQuadroPreset.disabled = false;
+            renderQuadrosPresets();
+          });
+        });
+      }
+    }
+
+    if (presetQuadroSelect) {
+      presetQuadroSelect.addEventListener('change', () => {
+        const val = presetQuadroSelect.value;
+        const bannerInput = document.getElementById('bannerTextInput');
+        if (val && bannerInput) {
+          bannerInput.value = val;
+          bannerInput.dispatchEvent(new Event('input'));
+        }
+        if (btnDeleteQuadroPreset) btnDeleteQuadroPreset.disabled = !val;
+        renderQuadrosPresets();
+      });
+    }
+
+    if (btnSaveQuadroPreset) {
+      btnSaveQuadroPreset.addEventListener('click', () => {
+        const bannerInput = document.getElementById('bannerTextInput');
+        const val = bannerInput ? bannerInput.value.trim() : '';
+        if (!val) {
+          alert('Digite o nome do quadro para salvar.');
+          return;
+        }
+        const list = getSavedQuadros();
+        if (!list.includes(val)) {
+          list.unshift(val);
+          saveQuadrosList(list);
+        }
+        if (presetQuadroSelect) presetQuadroSelect.value = val;
+        if (btnDeleteQuadroPreset) btnDeleteQuadroPreset.disabled = false;
+        renderQuadrosPresets();
+
+        btnSaveQuadroPreset.innerHTML = '<span>✓ Salvo!</span>';
+        setTimeout(() => {
+          btnSaveQuadroPreset.innerHTML = '<span>💾 Salvar</span>';
+        }, 1500);
+      });
+    }
+
+    if (btnDeleteQuadroPreset) {
+      btnDeleteQuadroPreset.addEventListener('click', () => {
+        const val = presetQuadroSelect ? presetQuadroSelect.value : '';
+        if (!val) return;
+        if (confirm(`Deseja remover o quadro "${val}" da lista de salvos?`)) {
+          const list = getSavedQuadros().filter(q => q !== val);
+          saveQuadrosList(list);
+          if (presetQuadroSelect) presetQuadroSelect.value = '';
+          btnDeleteQuadroPreset.disabled = true;
+          renderQuadrosPresets();
+        }
+      });
+    }
+
+    const bannerInputEl = document.getElementById('bannerTextInput');
+    if (bannerInputEl) {
+      bannerInputEl.addEventListener('input', () => {
+        const currentVal = bannerInputEl.value.trim();
+        if (presetQuadroSelect) {
+          presetQuadroSelect.value = currentVal;
+          if (btnDeleteQuadroPreset) btnDeleteQuadroPreset.disabled = !presetQuadroSelect.value;
+        }
+        if (quadroChipsContainer) {
+          quadroChipsContainer.querySelectorAll('.quadro-chip').forEach(chip => {
+            chip.classList.toggle('active', chip.dataset.quadro === currentVal);
+          });
+        }
+      });
+    }
+
+    // ── TECH EMOJI PICKER LISTENERS ──
+    document.querySelectorAll('.btn-emoji-tag').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const emoji = btn.dataset.emoji;
+        const input = document.getElementById('bannerTextInput');
+        if (!input) return;
+        const current = input.value.trim();
+        if (current) {
+          const withoutInitialEmoji = current.replace(/^[\p{Emoji}\s]+/u, '').trim();
+          input.value = `${emoji} ${withoutInitialEmoji}`.trim();
+        } else {
+          input.value = `${emoji} ZAPRUN`;
+        }
+        input.dispatchEvent(new Event('input'));
+      });
+    });
+
+    renderQuadrosPresets();
+
+    // ── CANVAS DRAWING ENGINE (GPU ACELERADO & ULTRA OTIMIZADO) ──
+    let cachedBannerText = '';
+    let cachedBannerWidth = 0;
+
+    function drawAdjustedCam(video, x, y, w, h) {
+      if (!video || !video.videoWidth || !video.videoHeight) return;
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      const vAspect = vw / vh;
+      const tAspect = w / h;
+
+      let baseSw, baseSh;
+      if (vAspect > tAspect) {
+        baseSh = vh;
+        baseSw = vh * tAspect;
+      } else {
+        baseSw = vw;
+        baseSh = vw / tAspect;
+      }
+
+      const sw = baseSw / camZoom;
+      const sh = baseSh / camZoom;
+
+      const sx = Math.max(0, Math.min(vw - sw, (vw - sw) * camPanX));
+      const sy = Math.max(0, Math.min(vh - sh, (vh - sh) * camPanY));
+
+      const hasFilters = camBrightness !== 100 || camContrast !== 100 || camSaturation !== 100;
+
+      ctx.save();
+      if (hasFilters) {
+        ctx.filter = `brightness(${camBrightness}%) contrast(${camContrast}%) saturate(${camSaturation}%)`;
+      }
+
+      if (isCamMirrored) {
+        ctx.translate(x + w, y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+      } else {
+        ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
+      }
+      ctx.restore();
+    }
+
+    function drawScreenCover(video, x, y, w, h) {
+      if (!video || !video.videoWidth || !video.videoHeight) return;
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      const vAspect = vw / vh;
+      const tAspect = w / h;
+      let baseSw, baseSh;
+
+      if (vAspect > tAspect) {
+        baseSh = vh;
+        baseSw = vh * tAspect;
+      } else {
+        baseSw = vw;
+        baseSh = vw / tAspect;
+      }
+
+      const sw = baseSw / screenZoom;
+      const sh = baseSh / screenZoom;
+
+      const sx = Math.max(0, Math.min(vw - sw, (vw - sw) * screenPanX));
+      const sy = Math.max(0, Math.min(vh - sh, (vh - sh) * screenPanY));
+
+      ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
+    }
+
+    function drawEmptyState(x, y, w, h, label) {
+      ctx.fillStyle = '#0a0e17';
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 10, y + 10, w - 20, h - 20);
+
+      ctx.fillStyle = '#64748b';
+      const fontSize = Math.max(22, Math.round(w * 0.038));
+      ctx.font = `700 ${fontSize}px Outfit, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, x + w / 2, y + h / 2);
+    }
+
+    function renderStage() {
+      const W = studioCanvas.width;
+      const H = studioCanvas.height;
+
+      ctx.fillStyle = '#05070c';
+      ctx.fillRect(0, 0, W, H);
+
+      const hasCam = camStream && rawCam && rawCam.videoWidth > 0;
+      const hasScreen = screenStream && rawScreen && rawScreen.videoWidth > 0;
+
+      const splitH1 = Math.round(H * splitRatio);
+      const splitH2 = H - splitH1;
+
+      switch (currentLayout) {
+        case 'split-vertical':
+          if (hasCam) drawAdjustedCam(rawCam, 0, 0, W, splitH1);
+          else drawEmptyState(0, 0, W, splitH1, '📷 Câmera Web');
+
+          if (hasScreen) drawScreenCover(rawScreen, 0, splitH1, W, splitH2);
+          else drawEmptyState(0, splitH1, W, splitH2, '🖥️ Compartilhe a Tela');
+
+          if (dividerColor !== 'transparent') {
+            ctx.fillStyle = dividerColor;
+            ctx.fillRect(0, splitH1 - 3, W, 6);
+          }
+          break;
+
+        case 'split-vertical-inv':
+          if (hasScreen) drawScreenCover(rawScreen, 0, 0, W, splitH1);
+          else drawEmptyState(0, 0, W, splitH1, '🖥️ Compartilhe a Tela');
+
+          if (hasCam) drawAdjustedCam(rawCam, 0, splitH1, W, splitH2);
+          else drawEmptyState(0, splitH1, W, splitH2, '📷 Câmera Web');
+
+          if (dividerColor !== 'transparent') {
+            ctx.fillStyle = dividerColor;
+            ctx.fillRect(0, splitH1 - 3, W, 6);
+          }
+          break;
+
+        case 'split-horizontal':
+          const splitW1 = Math.round(W * splitRatio);
+          const splitW2 = W - splitW1;
+
+          if (hasCam) drawAdjustedCam(rawCam, 0, 0, splitW1, H);
+          else drawEmptyState(0, 0, splitW1, H, '📷 Câmera');
+
+          if (hasScreen) drawScreenCover(rawScreen, splitW1, 0, splitW2, H);
+          else drawEmptyState(splitW1, 0, splitW2, H, '🖥️ Tela');
+
+          if (dividerColor !== 'transparent') {
+            ctx.fillStyle = dividerColor;
+            ctx.fillRect(splitW1 - 3, 0, 6, H);
+          }
+          break;
+
+        case 'pip-circle':
+          if (hasScreen) drawScreenCover(rawScreen, 0, 0, W, H);
+          else drawEmptyState(0, 0, W, H, '🖥️ Compartilhe a Tela');
+
+          if (hasCam) {
+            const size = Math.min(W, H) * pipSize;
+            const px = W - size - 36;
+            const py = H - size - 36;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(px + size / 2, py + size / 2, size / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            drawAdjustedCam(rawCam, px, py, size, size);
+            ctx.restore();
+
+            ctx.beginPath();
+            ctx.arc(px + size / 2, py + size / 2, (size / 2) + 2, 0, Math.PI * 2);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = dividerColor !== 'transparent' ? dividerColor : '#f97316';
+            ctx.stroke();
+          }
+          break;
+
+        case 'cam-only':
+          if (hasCam) drawAdjustedCam(rawCam, 0, 0, W, H);
+          else drawEmptyState(0, 0, W, H, '📷 Câmera');
+          break;
+
+        case 'screen-only':
+          if (hasScreen) drawScreenCover(rawScreen, 0, 0, W, H);
+          else drawEmptyState(0, 0, W, H, '🖥️ Tela');
+          break;
+      }
+
+      // ── CENTERAL SPLIT BANNER (NOME DO QUADRO - OTIMIZADO & NITIDO) ──
+      const bannerTextInput = document.getElementById('bannerTextInput');
+      const bannerText = bannerTextInput ? bannerTextInput.value.trim() : '';
+      if (bannerText && (currentLayout === 'split-vertical' || currentLayout === 'split-vertical-inv')) {
+        const centerY = splitH1;
+        ctx.save();
+        ctx.font = '900 28px Outfit, sans-serif';
+        if (cachedBannerText !== bannerText) {
+          cachedBannerText = bannerText;
+          cachedBannerWidth = ctx.measureText(bannerText).width;
+        }
+        const badgeW = cachedBannerWidth + 56;
+        const badgeH = 54;
+        const badgeX = (W - badgeW) / 2;
+        const badgeY = centerY - (badgeH / 2);
+
+        // Fundo nítido
+        ctx.fillStyle = '#06080f';
+        ctx.beginPath();
+        ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 27);
+        ctx.fill();
+
+        // Borda neon vibrante
+        const strokeColor = dividerColor !== 'transparent' ? dividerColor : '#f97316';
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(bannerText, W / 2, centerY + 1);
+        ctx.restore();
+      }
+
+      // ── BRAND WATERMARK BADGE (INSTAGRAM @CLEBIOZ - DESTACADO & PERFEITO) ──
+      ctx.save();
+      ctx.font = '700 22px Outfit, sans-serif';
+      const brandText = '@clebioz';
+      const textW = ctx.measureText(brandText).width;
+      const iconW = 25;
+      const gap = 10;
+      const padX = 18;
+      const totalContentW = iconW + gap + textW;
+      const badgeW = Math.round(totalContentW + (padX * 2));
+      const badgeH = 46;
+      const badgeX = W - badgeW - 24;
+      const badgeY = 24;
+
+      // Fundo escuro elegante com cantos arredondados
+      ctx.fillStyle = 'rgba(7, 9, 14, 0.88)';
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 23);
+      ctx.fill();
+
+      // Borda sutil de vidro
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Posição inicial perfeitamente simétrica do ícone
+      const iconX = badgeX + padX;
+      const iconY = badgeY + ((badgeH - iconW) / 2);
+
+      // Ícone do Instagram
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.roundRect(iconX, iconY, iconW, iconW, 7);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(iconX + (iconW / 2), iconY + (iconW / 2), 5.2, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(iconX + iconW - 5.5, iconY + 5.5, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Texto @clebioz perfeitamente alinhado verticalmente e centralizado
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(brandText, iconX + iconW + gap, badgeY + (badgeH / 2) + 1);
+      ctx.restore();
+
+      requestAnimationFrame(renderStage);
+    }
+
+    renderStage();
+
+    // ── MOUSE CONTROLS (PAN, ZOOM, DIVIDER RESIZE) ──
+    let isDraggingCanvas = false;
+    let dragTarget = null;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let initialPanX = 0;
+    let initialPanY = 0;
+
+    studioCanvas.addEventListener('mousemove', (e) => {
+      const rect = studioCanvas.getBoundingClientRect();
+      const clickYRatio = (e.clientY - rect.top) / rect.height;
+
+      if ((currentLayout === 'split-vertical' || currentLayout === 'split-vertical-inv') && Math.abs(clickYRatio - splitRatio) < 0.04) {
+        studioCanvas.style.cursor = 'ns-resize';
+      } else if (!isDraggingCanvas) {
+        studioCanvas.style.cursor = 'grab';
+      }
+    });
+
+    studioCanvas.addEventListener('mousedown', (e) => {
+      const rect = studioCanvas.getBoundingClientRect();
+      const clickYRatio = (e.clientY - rect.top) / rect.height;
+      isDraggingCanvas = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+
+      if ((currentLayout === 'split-vertical' || currentLayout === 'split-vertical-inv') && Math.abs(clickYRatio - splitRatio) < 0.04) {
+        dragTarget = 'divider';
+        studioCanvas.style.cursor = 'ns-resize';
+        return;
+      }
+
+      studioCanvas.style.cursor = 'grabbing';
+
+      if (currentLayout === 'split-vertical') {
+        if (clickYRatio < splitRatio) {
+          dragTarget = 'cam';
+          initialPanX = camPanX;
+          initialPanY = camPanY;
+        } else {
+          dragTarget = 'screen';
+          initialPanX = screenPanX;
+          initialPanY = screenPanY;
+        }
+      } else if (currentLayout === 'split-vertical-inv') {
+        if (clickYRatio < splitRatio) {
+          dragTarget = 'screen';
+          initialPanX = screenPanX;
+          initialPanY = screenPanY;
+        } else {
+          dragTarget = 'cam';
+          initialPanX = camPanX;
+          initialPanY = camPanY;
+        }
+      } else {
+        dragTarget = clickYRatio < 0.5 ? 'cam' : 'screen';
+        initialPanX = screenPanX;
+        initialPanY = screenPanY;
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDraggingCanvas) return;
+
+      if (dragTarget === 'divider') {
+        const rect = studioCanvas.getBoundingClientRect();
+        const newRatio = Math.max(0.25, Math.min(0.75, (e.clientY - rect.top) / rect.height));
+        splitRatio = newRatio;
+        const percent = Math.round(newRatio * 100);
+        splitRatioSlider.value = percent;
+        splitRatioVal.innerText = `${percent}/${100 - percent}`;
+        return;
+      }
+
+      const deltaX = (e.clientX - dragStartX) / 400;
+      const deltaY = (e.clientY - dragStartY) / 400;
+
+      if (dragTarget === 'cam') {
+        camPanX = Math.max(0, Math.min(1, initialPanX - deltaX));
+        camPanY = Math.max(0, Math.min(1, initialPanY - deltaY));
+        if (camPanXSlider) { camPanXSlider.value = Math.round(camPanX * 100); if (camPanXVal) camPanXVal.innerText = camPanXSlider.value + '%'; }
+        camPanYSlider.value = Math.round(camPanY * 100);
+        camPanYVal.innerText = camPanYSlider.value + '%';
+      } else if (dragTarget === 'screen') {
+        screenPanX = Math.max(0, Math.min(1, initialPanX - deltaX));
+        screenPanY = Math.max(0, Math.min(1, initialPanY - deltaY));
+        screenPanXSlider.value = Math.round(screenPanX * 100);
+        screenPanXVal.innerText = screenPanXSlider.value + '%';
+        screenPanYSlider.value = Math.round(screenPanY * 100);
+        screenPanYVal.innerText = screenPanYSlider.value + '%';
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDraggingCanvas) {
+        isDraggingCanvas = false;
+        studioCanvas.style.cursor = 'grab';
+      }
+    });
+
+    studioCanvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const rect = studioCanvas.getBoundingClientRect();
+      const clickYRatio = (e.clientY - rect.top) / rect.height;
+      const zoomDelta = e.deltaY < 0 ? 0.08 : -0.08;
+
+      if (currentLayout === 'split-vertical') {
+        if (clickYRatio < splitRatio) {
+          camZoom = Math.max(1.0, Math.min(2.5, camZoom + zoomDelta));
+          camZoomSlider.value = camZoom;
+          camZoomVal.innerText = camZoom.toFixed(2) + 'x';
+        } else {
+          screenZoom = Math.max(1.0, Math.min(3.0, screenZoom + zoomDelta));
+          screenZoomSlider.value = screenZoom;
+          screenZoomVal.innerText = screenZoom.toFixed(2) + 'x';
+        }
+      } else if (currentLayout === 'split-vertical-inv') {
+        if (clickYRatio < splitRatio) {
+          screenZoom = Math.max(1.0, Math.min(3.0, screenZoom + zoomDelta));
+          screenZoomSlider.value = screenZoom;
+          screenZoomVal.innerText = screenZoom.toFixed(2) + 'x';
+        } else {
+          camZoom = Math.max(1.0, Math.min(2.5, camZoom + zoomDelta));
+          camZoomSlider.value = camZoom;
+          camZoomVal.innerText = camZoom.toFixed(2) + 'x';
+        }
+      } else {
+        screenZoom = Math.max(1.0, Math.min(3.0, screenZoom + zoomDelta));
+        screenZoomSlider.value = screenZoom;
+        screenZoomVal.innerText = screenZoom.toFixed(2) + 'x';
+      }
+    }, { passive: false });
+
+    studioCanvas.addEventListener('dblclick', (e) => {
+      const rect = studioCanvas.getBoundingClientRect();
+      const clickYRatio = (e.clientY - rect.top) / rect.height;
+
+      if (clickYRatio < splitRatio) {
+        camZoom = 1.0;
+        camPanX = 0.5;
+        camPanY = 0.5;
+        camZoomSlider.value = 1.0;
+        camZoomVal.innerText = '1.0x';
+        if (camPanXSlider) { camPanXSlider.value = 50; if (camPanXVal) camPanXVal.innerText = '50%'; }
+        camPanYSlider.value = 50;
+        camPanYVal.innerText = '50%';
+      } else {
+        screenZoom = 1.0;
+        screenPanX = 0.5;
+        screenPanY = 0.5;
+        screenZoomSlider.value = 1.0;
+        screenZoomVal.innerText = '1.0x';
+        screenPanXSlider.value = 50;
+        screenPanXVal.innerText = '50%';
+        screenPanYSlider.value = 50;
+        screenPanYVal.innerText = '50%';
+      }
+    });
+
+    // ── SEGMENTED RECORDING ENGINE (ESTILO INSTAGRAM REELS) ──
+    let recordedTakes = []; // Array of { id, blob, url, durationSec, chunks }
+    let currentTakeChunks = [];
+    let currentTakeStartTime = 0;
+    let currentTakeSeconds = 0;
+    let isCurrentlyRecording = false;
+    let isSessionActive = false;
+    let currentTakeTimerInterval = null;
+
+    const btnStartRecord = document.getElementById('btnStartRecord');
+    const btnPauseRecord = document.getElementById('btnPauseRecord');
+    const btnResumeRecord = document.getElementById('btnResumeRecord');
+    const btnStopRecord = document.getElementById('btnStopRecord');
+    const btnUndoTake = document.getElementById('btnUndoTake');
+    const btnDiscardAllTakes = document.getElementById('btnDiscardAllTakes');
+
+    const takesTimelineBox = document.getElementById('takesTimelineBox');
+    const takesCountLabel = document.getElementById('takesCountLabel');
+    const takesTotalTimeLabel = document.getElementById('takesTotalTimeLabel');
+    const takesSegmentsTrack = document.getElementById('takesSegmentsTrack');
+    const takesChipsList = document.getElementById('takesChipsList');
+
+    const recBadge = document.getElementById('recBadge');
+    const recTimerText = document.getElementById('recTimerText');
+    const hookBadge = document.getElementById('hookBadge');
+    const hookCountdownVal = document.getElementById('hookCountdownVal');
+
+    function getTotalRecordedSeconds() {
+      const savedSecs = recordedTakes.reduce((acc, t) => acc + (t.durationSec || 0), 0);
+      return savedSecs + (isCurrentlyRecording ? currentTakeSeconds : 0);
+    }
+
+    function formatTime(totalSecs) {
+      const s = Math.floor(totalSecs);
+      const mins = String(Math.floor(s / 60)).padStart(2, '0');
+      const secs = String(s % 60).padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    function updateTakesTimelineUI() {
+      const totalSecs = getTotalRecordedSeconds();
+      const count = recordedTakes.length + (isCurrentlyRecording ? 1 : 0);
+
+      if (takesTimelineBox) {
+        takesTimelineBox.style.display = (count > 0 || isSessionActive) ? 'flex' : 'none';
+      }
+
+      if (takesCountLabel) {
+        takesCountLabel.innerText = `${count} ${count === 1 ? 'trecho' : 'trechos'}`;
+      }
+
+      if (takesTotalTimeLabel) {
+        takesTotalTimeLabel.innerText = formatTime(totalSecs);
+      }
+
+      if (recTimerText) {
+        recTimerText.innerText = formatTime(totalSecs);
+      }
+
+      // Render segmented bar
+      if (takesSegmentsTrack) {
+        const maxExpectedSecs = Math.max(45, totalSecs + 10);
+        let trackHtml = recordedTakes.map((take, idx) => {
+          const pct = Math.max(3, (take.durationSec / maxExpectedSecs) * 100);
+          return `<div class="take-segment" style="width:${pct}%;" title="Trecho ${idx + 1} (${take.durationSec.toFixed(1)}s)"></div>`;
+        }).join('');
+
+        if (isCurrentlyRecording) {
+          const currentPct = Math.max(3, (currentTakeSeconds / maxExpectedSecs) * 100);
+          trackHtml += `<div class="take-segment current-recording" style="width:${currentPct}%;"></div>`;
+        }
+
+        takesSegmentsTrack.innerHTML = trackHtml;
+      }
+
+      // Render chips
+      if (takesChipsList) {
+        takesChipsList.innerHTML = recordedTakes.map((take, idx) => `
+          <div class="take-badge" title="Trecho ${idx + 1}">
+            <span>🎬 T${idx + 1}: ${take.durationSec.toFixed(1)}s</span>
+          </div>
+        `).join('');
+      }
+
+      // Undo button state (only when paused and there are takes)
+      if (btnUndoTake) {
+        const canUndo = !isCurrentlyRecording && recordedTakes.length > 0;
+        btnUndoTake.style.display = canUndo ? 'flex' : 'none';
+        btnUndoTake.querySelector('span').innerText = `↩️ Desfazer Trecho ${recordedTakes.length}`;
+      }
+
+      // Discard button state
+      if (btnDiscardAllTakes) {
+        const canDiscard = (recordedTakes.length > 0 || isCurrentlyRecording);
+        btnDiscardAllTakes.style.display = canDiscard ? 'flex' : 'none';
+      }
+    }
+
+    function createMixedCanvasStream() {
+      const canvasStream = studioCanvas.captureStream(60);
+      try {
+        const mixerCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const mixerDest = mixerCtx.createMediaStreamDestination();
+        let hasAnyAudio = false;
+
+        // 1. Canal do Microfone
+        const micVol = micVolSlider ? (parseInt(micVolSlider.value, 10) / 100) : 1.0;
+        if (audioStream && audioStream.getAudioTracks().length > 0) {
+          const micSrc = mixerCtx.createMediaStreamSource(audioStream);
+          const micGain = mixerCtx.createGain();
+          micGain.gain.value = micVol;
+          micSrc.connect(micGain);
+          micGain.connect(mixerDest);
+          hasAnyAudio = true;
+        }
+
+        // 2. Canal do Áudio do Computador / PC
+        const isSysAudioActive = document.getElementById('chkSystemAudio') ? document.getElementById('chkSystemAudio').checked : true;
+        const sysVolSlider = document.getElementById('sysAudioVolSlider');
+        const sysVol = sysVolSlider ? (parseInt(sysVolSlider.value, 10) / 100) : 1.0;
+
+        if (isSysAudioActive && screenStream && screenStream.getAudioTracks().length > 0) {
+          const pcSrc = mixerCtx.createMediaStreamSource(screenStream);
+          const pcGain = mixerCtx.createGain();
+          pcGain.gain.value = sysVol;
+          pcSrc.connect(pcGain);
+          pcGain.connect(mixerDest);
+          hasAnyAudio = true;
+        }
+
+        if (hasAnyAudio) {
+          const mixedAudioTrack = mixerDest.stream.getAudioTracks()[0];
+          if (mixedAudioTrack) canvasStream.addTrack(mixedAudioTrack);
+        }
+      } catch (audioErr) {
+        console.warn('Fallback para áudio direto:', audioErr);
+        if (audioStream && audioStream.getAudioTracks().length > 0) {
+          canvasStream.addTrack(audioStream.getAudioTracks()[0]);
+        }
+      }
+      return canvasStream;
+    }
+
+    // ── MULTI-TAKE RECORDING ENGINE WITH REAL UNDO & FAST MERGE ──
+    function startTake() {
+      currentTakeChunks = [];
+      currentTakeSeconds = 0;
+      currentTakeStartTime = Date.now();
+      isCurrentlyRecording = true;
+      isSessionActive = true;
+
+      const canvasStream = createMixedCanvasStream();
+
+      let bitrate = 12_000_000;
+      if (videoQuality === '2k') bitrate = 22_000_000;
+      if (videoQuality === '4k') bitrate = 36_000_000;
+
+      let options = { mimeType: 'video/webm;codecs=vp9,opus', videoBitsPerSecond: bitrate };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm', videoBitsPerSecond: bitrate };
+      }
+
+      mediaRecorder = new MediaRecorder(canvasStream, options);
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) currentTakeChunks.push(e.data);
+      };
+
+      mediaRecorder.start(200);
+
+      // Gancho inicial 3s (apenas no 1º trecho)
+      if (recordedTakes.length === 0) {
+        hookBadge.style.display = 'flex';
+        hookBadge.style.borderColor = 'var(--gold)';
+        let hookSecs = 3.0;
+        hookCountdownVal.innerText = '3.0s';
+        const hookTimer = setInterval(() => {
+          if (!isCurrentlyRecording) return;
+          hookSecs -= 0.1;
+          if (hookSecs <= 0) {
+            clearInterval(hookTimer);
+            hookCountdownVal.innerText = '✓ Gancho Feito!';
+            hookBadge.style.borderColor = 'var(--success)';
+            setTimeout(() => { hookBadge.style.display = 'none'; }, 1800);
+          } else {
+            hookCountdownVal.innerText = hookSecs.toFixed(1) + 's';
+          }
+        }, 100);
+      }
+
+      // UI Updates
+      btnStartRecord.style.display = 'none';
+      btnResumeRecord.style.display = 'none';
+      btnPauseRecord.style.display = 'flex';
+      btnStopRecord.style.display = 'flex';
+      if (btnDiscardAllTakes) btnDiscardAllTakes.style.display = 'flex';
+
+      recBadge.classList.add('active');
+      recBadge.classList.remove('paused');
+      recBadge.querySelector('span:nth-child(2)').innerText = `GRAVANDO T${recordedTakes.length + 1}`;
+
+      if (!isPrompterScrolling) {
+        btnPrompterToggle.click();
+      }
+
+      clearInterval(currentTakeTimerInterval);
+      currentTakeTimerInterval = setInterval(() => {
+        if (!isCurrentlyRecording) return;
+        currentTakeSeconds = (Date.now() - currentTakeStartTime) / 1000;
+        updateTakesTimelineUI();
+      }, 200);
+
+      updateTakesTimelineUI();
+    }
+
+    function pauseTake() {
+      return new Promise((resolve) => {
+        if (!isCurrentlyRecording || !mediaRecorder || mediaRecorder.state === 'inactive') {
+          resolve();
+          return;
+        }
+
+        isCurrentlyRecording = false;
+        clearInterval(currentTakeTimerInterval);
+
+        const duration = Math.max(0.4, (Date.now() - currentTakeStartTime) / 1000);
+
+        mediaRecorder.onstop = () => {
+          const takeBlob = new Blob(currentTakeChunks, { type: 'video/webm' });
+          const takeUrl = URL.createObjectURL(takeBlob);
+          const takeObj = {
+            id: Date.now(),
+            blob: takeBlob,
+            url: takeUrl,
+            durationSec: duration,
+            chunks: [...currentTakeChunks]
+          };
+          recordedTakes.push(takeObj);
+
+          btnPauseRecord.style.display = 'none';
+          btnResumeRecord.style.display = 'flex';
+          btnStopRecord.style.display = 'flex';
+          if (btnDiscardAllTakes) btnDiscardAllTakes.style.display = 'flex';
+
+          recBadge.classList.add('paused');
+          recBadge.querySelector('span:nth-child(2)').innerText = `PAUSADO (T${recordedTakes.length})`;
+
+          if (isPrompterScrolling) {
+            clearInterval(prompterScrollTimer);
+          }
+
+          updateTakesTimelineUI();
+          resolve(takeObj);
+        };
+
+        mediaRecorder.stop();
+      });
+    }
+
+    function undoLastTake() {
+      if (isCurrentlyRecording || recordedTakes.length === 0) return;
+      const removed = recordedTakes.pop();
+      if (removed && removed.url) {
+        try { URL.revokeObjectURL(removed.url); } catch (e) {}
+      }
+
+      if (recordedTakes.length === 0) {
+        isSessionActive = false;
+        btnResumeRecord.style.display = 'none';
+        btnPauseRecord.style.display = 'none';
+        btnStopRecord.style.display = 'none';
+        btnStartRecord.style.display = 'flex';
+        if (btnDiscardAllTakes) btnDiscardAllTakes.style.display = 'none';
+
+        recBadge.classList.remove('active', 'paused');
+        recTimerText.innerText = '00:00';
+        prompterScrollBox.scrollTop = 0;
+      } else {
+        recBadge.querySelector('span:nth-child(2)').innerText = `PAUSADO (T${recordedTakes.length})`;
+      }
+
+      updateTakesTimelineUI();
+    }
+
+    const modalConfirmDiscard = document.getElementById('modalConfirmDiscard');
+    const btnCancelDiscard = document.getElementById('btnCancelDiscard');
+    const btnConfirmDiscard = document.getElementById('btnConfirmDiscard');
+
+    function promptDiscardAllTakes() {
+      if (modalConfirmDiscard) {
+        modalConfirmDiscard.classList.add('active');
+        modalConfirmDiscard.style.display = 'flex';
+      }
+    }
+
+    function performDiscardAllTakes() {
+      if (modalConfirmDiscard) {
+        modalConfirmDiscard.classList.remove('active');
+        modalConfirmDiscard.style.display = 'none';
+      }
+
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        try { mediaRecorder.stop(); } catch (e) {}
+      }
+
+      clearInterval(currentTakeTimerInterval);
+      recordedTakes.forEach(t => {
+        try { URL.revokeObjectURL(t.url); } catch (e) {}
+      });
+      recordedTakes = [];
+      currentTakeChunks = [];
+      isCurrentlyRecording = false;
+      isSessionActive = false;
+
+      btnStartRecord.style.display = 'flex';
+      btnPauseRecord.style.display = 'none';
+      btnResumeRecord.style.display = 'none';
+      btnStopRecord.style.display = 'none';
+      if (btnDiscardAllTakes) btnDiscardAllTakes.style.display = 'none';
+
+      recBadge.classList.remove('active', 'paused');
+      recTimerText.innerText = '00:00';
+
+      if (isPrompterScrolling) {
+        btnPrompterToggle.click();
+      }
+      prompterScrollBox.scrollTop = 0;
+
+      updateTakesTimelineUI();
+    }
+
+    if (btnCancelDiscard) {
+      btnCancelDiscard.addEventListener('click', () => {
+        if (modalConfirmDiscard) {
+          modalConfirmDiscard.classList.remove('active');
+          modalConfirmDiscard.style.display = 'none';
+        }
+      });
+    }
+
+    if (btnConfirmDiscard) {
+      btnConfirmDiscard.addEventListener('click', performDiscardAllTakes);
+    }
+
+    if (modalConfirmDiscard) {
+      modalConfirmDiscard.addEventListener('click', (e) => {
+        if (e.target === modalConfirmDiscard) {
+          modalConfirmDiscard.classList.remove('active');
+          modalConfirmDiscard.style.display = 'none';
+        }
+      });
+    }
+
+    function findFirstClusterOffset(uint8) {
+      // Procura pelo ID do Cluster WebM: 0x1F, 0x43, 0xB6, 0x75
+      for (let i = 0; i < uint8.length - 4; i++) {
+        if (uint8[i] === 0x1F && uint8[i+1] === 0x43 && uint8[i+2] === 0xB6 && uint8[i+3] === 0x75) {
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    async function mergeWebmTakesInstant(takes) {
+      if (takes.length === 1) return takes[0].blob;
+
+      const buffers = [];
+      for (let i = 0; i < takes.length; i++) {
+        const arrayBuf = await takes[i].blob.arrayBuffer();
+        const uint8 = new Uint8Array(arrayBuf);
+        if (i === 0) {
+          buffers.push(uint8);
+        } else {
+          const clusterOffset = findFirstClusterOffset(uint8);
+          if (clusterOffset > 0) {
+            buffers.push(uint8.slice(clusterOffset));
+          } else {
+            buffers.push(uint8);
+          }
+        }
+      }
+
+      return new Blob(buffers, { type: 'video/webm' });
+    }
+
+    async function finishAndExportSession() {
+      if (isCurrentlyRecording) {
+        await pauseTake();
+      }
+
+      if (recordedTakes.length === 0) {
+        alert('Nenhum trecho foi gravado ainda.');
+        return;
+      }
+
+      // União instantânea dos trechos em memória (0.01s, sem travar nem entrar em loop)
+      const finalBlob = await mergeWebmTakesInstant(recordedTakes);
+      const finalUrl = URL.createObjectURL(finalBlob);
+
+      showPreviewModal(finalUrl, recordedTakes);
+
+      // Reset estado de gravação após abrir modal
+      btnStartRecord.style.display = 'flex';
+      btnPauseRecord.style.display = 'none';
+      btnResumeRecord.style.display = 'none';
+      btnStopRecord.style.display = 'none';
+      
+      // A lixeirinha CONTINUA visível após exportação para permitir limpar os trechos gravados
+      if (btnDiscardAllTakes) {
+        btnDiscardAllTakes.style.display = (recordedTakes.length > 0) ? 'flex' : 'none';
+      }
+
+      recBadge.classList.remove('active', 'paused');
+      isCurrentlyRecording = false;
+      isSessionActive = false;
+      if (isPrompterScrolling) {
+        btnPrompterToggle.click();
+      }
+      updateTakesTimelineUI();
+    }
+
+    // Connect Action Listeners
+    if (btnStartRecord) btnStartRecord.addEventListener('click', () => startTake());
+    if (btnPauseRecord) btnPauseRecord.addEventListener('click', () => pauseTake());
+    if (btnResumeRecord) btnResumeRecord.addEventListener('click', () => startTake());
+    if (btnStopRecord) btnStopRecord.addEventListener('click', () => finishAndExportSession());
+    if (btnUndoTake) btnUndoTake.addEventListener('click', () => undoLastTake());
+    if (btnDiscardAllTakes) btnDiscardAllTakes.addEventListener('click', () => promptDiscardAllTakes());
+
+    // ── SAVE & LOAD USER DEFAULTS ──
+    const btnSaveDefaults = document.getElementById('btnSaveDefaults');
+    const saveStatusMsg = document.getElementById('saveStatusMsg');
+
+    function saveAllDefaults() {
+      const bannerTextInput = document.getElementById('bannerTextInput');
+      const defaults = {
+        cameraId: cameraSelect ? cameraSelect.value : '',
+        micId: micSelect ? micSelect.value : '',
+        micVol: micVolSlider ? micVolSlider.value : '100',
+        aspect: aspectSelect ? aspectSelect.value : '9:16',
+        quality: videoQuality || '1080p',
+        layout: currentLayout,
+        camZoom,
+        camPanX,
+        camPanY,
+        camBrightness,
+        camContrast,
+        camSaturation,
+        screenZoom,
+        screenPanX,
+        screenPanY,
+        splitRatio,
+        isCamMirrored,
+        dividerColor,
+        pipSize,
+        bannerText: bannerTextInput ? bannerTextInput.value.trim() : '',
+        selectedQuadro: presetQuadroSelect ? presetQuadroSelect.value : '',
+        prompterSpeed: prompterSpeed ? prompterSpeed.value : '2',
+        prompterFontSize: prompterFontSize ? prompterFontSize.value : '18',
+        sysAudioActive: chkSystemAudio ? chkSystemAudio.checked : true,
+        sysAudioVol: sysAudioVolSlider ? sysAudioVolSlider.value : '100',
+        previewScale
+      };
+      localStorage.setItem('csdigital_user_defaults', JSON.stringify(defaults));
+
+      if (saveStatusMsg) {
+        saveStatusMsg.style.display = 'block';
+        setTimeout(() => { saveStatusMsg.style.display = 'none'; }, 3000);
+      }
+    }
+
+    function loadAllDefaults() {
+      const stored = localStorage.getItem('csdigital_user_defaults');
+      if (!stored) return;
+      try {
+        const d = JSON.parse(stored);
+        if (d.cameraId) savedCameraId = d.cameraId;
+        if (d.micId) savedMicId = d.micId;
+        if (d.micVol !== undefined && micVolSlider) {
+          micVolSlider.value = d.micVol;
+          if (micVolVal) micVolVal.innerText = d.micVol + '%';
+        }
+        if (d.quality) {
+          setVideoQuality(d.quality);
+        }
+        if (d.aspect && aspectSelect) {
+          aspectRatio = d.aspect;
+          aspectSelect.value = d.aspect;
+        }
+        updateResolution();
+
+        if (d.sysAudioActive !== undefined && chkSystemAudio) {
+          chkSystemAudio.checked = d.sysAudioActive;
+          if (sysAudioStateLabel) sysAudioStateLabel.innerText = d.sysAudioActive ? 'Ativo' : 'Desativado';
+          if (sysAudioStateLabel) sysAudioStateLabel.style.color = d.sysAudioActive ? 'var(--primary)' : 'var(--text-dim)';
+        }
+        if (d.sysAudioVol !== undefined && sysAudioVolSlider) {
+          sysAudioVolSlider.value = d.sysAudioVol;
+          if (sysAudioVolVal) sysAudioVolVal.innerText = d.sysAudioVol + '%';
+        }
+
+        if (d.layout) {
+          currentLayout = d.layout;
+          document.querySelectorAll('.btn-layout').forEach(b => {
+            b.classList.toggle('active', b.dataset.layout === currentLayout);
+          });
+        }
+        if (d.camZoom !== undefined && camZoomSlider) { camZoom = d.camZoom; camZoomSlider.value = d.camZoom; camZoomVal.innerText = d.camZoom.toFixed(2) + 'x'; }
+        if (d.camPanX !== undefined && camPanXSlider) { camPanX = d.camPanX; camPanXSlider.value = Math.round(d.camPanX * 100); if (camPanXVal) camPanXVal.innerText = camPanXSlider.value + '%'; }
+        if (d.camPanY !== undefined && camPanYSlider) { camPanY = d.camPanY; camPanYSlider.value = Math.round(d.camPanY * 100); camPanYVal.innerText = camPanYSlider.value + '%'; }
+        if (d.camBrightness !== undefined && camBrightSlider) { camBrightness = d.camBrightness; camBrightSlider.value = d.camBrightness; if (camBrightVal) camBrightVal.innerText = d.camBrightness + '%'; }
+        if (d.camContrast !== undefined && camContrastSlider) { camContrast = d.camContrast; camContrastSlider.value = d.camContrast; if (camContrastVal) camContrastVal.innerText = d.camContrast + '%'; }
+        if (d.camSaturation !== undefined && camSatSlider) { camSaturation = d.camSaturation; camSatSlider.value = d.camSaturation; if (camSatVal) camSatVal.innerText = d.camSaturation + '%'; }
+        if (d.screenZoom !== undefined && screenZoomSlider) { screenZoom = d.screenZoom; screenZoomSlider.value = d.screenZoom; screenZoomVal.innerText = d.screenZoom.toFixed(2) + 'x'; }
+        if (d.screenPanX !== undefined && screenPanXSlider) { screenPanX = d.screenPanX; screenPanXSlider.value = Math.round(d.screenPanX * 100); screenPanXVal.innerText = screenPanXSlider.value + '%'; }
+        if (d.screenPanY !== undefined && screenPanYSlider) { screenPanY = d.screenPanY; screenPanYSlider.value = Math.round(d.screenPanY * 100); screenPanYVal.innerText = screenPanYSlider.value + '%'; }
+        if (d.splitRatio !== undefined && splitRatioSlider) { splitRatio = d.splitRatio; splitRatioSlider.value = Math.round(d.splitRatio * 100); splitRatioVal.innerText = `${splitRatioSlider.value}/${100 - splitRatioSlider.value}`; }
+        if (d.isCamMirrored !== undefined && camMirrorSelect) { isCamMirrored = d.isCamMirrored; camMirrorSelect.value = String(d.isCamMirrored); }
+        if (d.dividerColor && dividerColorSelect) { dividerColor = d.dividerColor; dividerColorSelect.value = d.dividerColor; }
+        if (d.pipSize !== undefined && pipSizeSlider) { pipSize = d.pipSize; pipSizeSlider.value = Math.round(d.pipSize * 100); pipSizeVal.innerText = pipSizeSlider.value + '%'; }
+        
+        const bannerTextInput = document.getElementById('bannerTextInput');
+        if (d.bannerText !== undefined && bannerTextInput) {
+          bannerTextInput.value = d.bannerText;
+        }
+        if (d.selectedQuadro !== undefined && presetQuadroSelect) {
+          presetQuadroSelect.value = d.selectedQuadro;
+        }
+        renderQuadrosPresets();
+
+        if (d.prompterSpeed && prompterSpeed) { prompterSpeed.value = d.prompterSpeed; }
+        if (d.prompterFontSize && prompterFontSize) { prompterFontSize.value = d.prompterFontSize; document.getElementById('prompterTextBody').style.fontSize = d.prompterFontSize + 'px'; }
+        if (d.previewScale) { previewScale = d.previewScale; updatePreviewScale(); }
+      } catch (e) {
+        console.warn('Erro ao carregar defaults:', e);
+      }
+    }
+
+    if (btnSaveDefaults) btnSaveDefaults.addEventListener('click', saveAllDefaults);
+
+    // Initial Auto-load & Device Initialization
+    loadAllDefaults();
+
+    async function requestFullPermissionsAndStart() {
+      try {
+        let constraints = {
+          video: {
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            frameRate: { ideal: 60 }
+          },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        };
+        if (savedCameraId) constraints.video.deviceId = { ideal: savedCameraId };
+        if (savedMicId) constraints.audio.deviceId = { ideal: savedMicId };
+
+        const fullStream = await navigator.mediaDevices.getUserMedia(constraints).catch(async () => {
+          return await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        });
+
+        // 1. Conectar Câmera
+        const videoTracks = fullStream.getVideoTracks();
+        if (videoTracks.length > 0) {
+          camStream = new MediaStream(videoTracks);
+          if (rawCam) {
+            rawCam.srcObject = camStream;
+            rawCam.onloadedmetadata = () => { rawCam.play().catch(() => {}); };
+            await rawCam.play().catch(() => {});
+          }
+          if (btnToggleCam) {
+            btnToggleCam.classList.add('active');
+            const span = btnToggleCam.querySelector('span:first-child');
+            if (span) span.innerText = '📷 Câmera Ativa';
+          }
+        }
+
+        // 2. Conectar Microfone
+        const audioTracks = fullStream.getAudioTracks();
+        if (audioTracks.length > 0) {
+          audioStream = new MediaStream(audioTracks);
+          setupAudioAnalyzer(audioStream);
+          if (btnToggleMic) {
+            btnToggleMic.classList.add('active');
+            const span = btnToggleMic.querySelector('span:first-child');
+            if (span) span.innerText = '🎙️ Microfone Ativo';
+          }
+        }
+
+        // 3. Atualizar Lista de Dispositivos (com nomes e IDs liberados)
+        await listDevices();
+      } catch (err) {
+        console.warn('Tentando inicialização individual:', err);
+        await startCamera(savedCameraId || undefined);
+        await startMicrophone(savedMicId || undefined);
+        await listDevices();
+      }
+    }
+
+    requestFullPermissionsAndStart();
+
+    // Fallback: no primeiro clique na página, se a câmera/mic ainda estiverem desligados, tenta ativar
+    window.addEventListener('click', function unlockMediaOnFirstClick() {
+      if (!camStream || !audioStream) {
+        requestFullPermissionsAndStart();
+      }
+      window.removeEventListener('click', unlockMediaOnFirstClick);
+    }, { once: true });
+
+    // ── SERVER SENT EVENTS (GLOBAL WINDOWS HOTKEYS F9 & F8) ──
+    function connectSSE() {
+      const sseUrl = window.location.port === '3399' ? '/events' : 'http://localhost:3399/events';
+      try {
+        const es = new EventSource(sseUrl);
+        es.onmessage = (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.tipo === 'studio-toggle-rec') {
+              if (!isCurrentlyRecording && !isSessionActive) {
+                startTake();
+              } else {
+                finishAndExportSession();
+              }
+            } else if (data.tipo === 'studio-toggle-pause') {
+              if (isCurrentlyRecording) {
+                pauseTake();
+              } else if (isSessionActive) {
+                startTake();
+              }
+            }
+          } catch (err) { }
+        };
+        es.onerror = () => {
+          setTimeout(connectSSE, 3000);
+        };
+      } catch (e) {
+        console.log('SSE Offline:', e);
+      }
+    }
+    connectSSE();
+
+    // ── KEYBOARD SHORTCUTS (NO NAVEGADOR & GLOBAIS) ──
+    window.addEventListener('keydown', (e) => {
+      const activeEl = document.activeElement;
+      const tag = activeEl ? activeEl.tagName.toLowerCase() : '';
+      const isTyping = tag === 'input' || tag === 'textarea' || tag === 'select';
+
+      if (isTyping) {
+        if (e.key === 'Escape' && activeEl) activeEl.blur();
+        return;
+      }
+
+      // F9, F10 ou R -> Iniciar Gravação ou Finalizar Vídeo
+      if (e.key === 'F9' || e.key === 'F10' || e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        if (activeEl && activeEl.tagName.toLowerCase() === 'button') activeEl.blur();
+        if (!isCurrentlyRecording && !isSessionActive) startTake();
+        else finishAndExportSession();
+        return;
+      }
+
+      // F8 ou Espaço ou P -> Pausar Trecho / Retomar Próximo Trecho
+      if (e.key === 'F8' || e.code === 'Space' || e.key === ' ' || e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        if (activeEl && activeEl.tagName.toLowerCase() === 'button') activeEl.blur();
+        if (isCurrentlyRecording) pauseTake();
+        else if (isSessionActive) startTake();
+        else startTake();
+        return;
+      }
+    });
+
+    // ── PREVIEW MODAL & DOWNLOAD ──
+    const modalPreview = document.getElementById('modalPreview');
+    const previewPlayer = document.getElementById('previewPlayer');
+    const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+
+    function showPreviewModal(url, takes = []) {
+      previewPlayer.src = url;
+      const selected = allScripts.find(s => s.id === scriptSelector.value);
+      const scriptName = selected ? selected.titulo.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Video';
+      const takesInfo = takes.length > 1 ? `_${takes.length}_Trechos` : '';
+      const filename = `CsDigital_${scriptName}${takesInfo}.webm`;
+
+      downloadVideoBtn.href = url;
+      downloadVideoBtn.download = filename;
+      modalPreview.classList.add('active');
+    }
+
+    document.getElementById('btnClosePreview').addEventListener('click', () => {
+      modalPreview.classList.remove('active');
+      previewPlayer.pause();
+    });
+  </script>
+</body>
+
+</html>
