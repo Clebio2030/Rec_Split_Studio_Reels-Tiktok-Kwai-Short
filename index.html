@@ -1135,10 +1135,35 @@
     }
 
     .btn-silence-pill.active {
-      background: var(--primary);
+      background: rgba(249, 115, 22, 0.22);
       border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.3);
+    }
+
+    .btn-speed-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-muted);
+      padding: 7px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-speed-pill:hover {
+      background: rgba(56, 189, 248, 0.15);
       color: #fff;
-      box-shadow: 0 0 12px var(--primary-glow);
+    }
+
+    .btn-speed-pill.active {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
     }
 
     .silence-progress-track {
@@ -1283,7 +1308,7 @@
     </a>
 
     <!-- TELEPROMPTER SUPERIOR NO HEADER (BEM NO TOPO DA TELA / OLHAR NA CÂMERA) -->
-    <div class="header-prompter-strip" id="headerPrompterStrip">
+    <div class="header-prompter-strip" id="headerPrompterStrip" style="display:none;">
       <div class="header-prompter-controls">
         <div class="prompter-drag-handle" id="headerPrompterDragHandle" title="Clique e arraste com o mouse para mover para cima ou para baixo">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1.5"></circle><circle cx="9" cy="12" r="1.5"></circle><circle cx="9" cy="19" r="1.5"></circle><circle cx="15" cy="5" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle><circle cx="15" cy="19" r="1.5"></circle></svg>
@@ -1316,26 +1341,37 @@
     </div>
 
     <div class="header-actions">
+      <!-- Botão/Badge de Vídeo em Segundo Plano (Sempre Visível no Topo quando Minimizado) -->
+      <button class="tab-btn" id="btnHeaderBackgroundVideo"
+        style="display:none; background: linear-gradient(135deg, rgba(249,115,22,0.35), rgba(16,185,129,0.25)); border:1.5px solid #f97316; color:#fff; padding: 6px 14px; font-weight:800; border-radius:8px; align-items:center; gap:6px; cursor:pointer; box-shadow: 0 0 16px rgba(249,115,22,0.45); z-index:100;"
+        title="Clique para reabrir os vídeos gravados e baixar">
+        <span id="headerBgIcon">⏳</span>
+        <span id="headerBgText">Vídeo em Segundo Plano</span>
+        <span style="font-size:10px; background:rgba(0,0,0,0.35); padding:2px 6px; border-radius:4px; font-weight:700;">↗ Abrir</span>
+      </button>
+
       <!-- Botão para alternar exibição do Teleprompter no Topo -->
       <button class="tab-btn" id="btnToggleHeaderPrompter"
-        style="background: rgba(249,115,22,0.18); border:1px solid var(--primary); color:#fff; padding: 6px 12px; font-weight:700; display:flex; align-items:center; gap:6px;"
+        style="background: rgba(255,255,255,0.06); border:1px solid var(--border-subtle); color:#fff; padding: 6px 12px; font-weight:700; display:flex; align-items:center; gap:6px;"
         title="Mostrar ou ocultar o teleprompter no topo da tela">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h20M4 3v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3M8 10h8M8 14h5"></path></svg>
         <span>Teleprompter</span>
       </button>
 
-      <!-- Botão Editor Pro (CapCut Integrado) -->
+      <!-- Botão Roteiro (Abre/fecha painel lateral de roteiros) -->
+      <button class="tab-btn" id="btnTogglePrompterView"
+        style="background: rgba(255,255,255,0.06); border:1px solid var(--border-subtle); color:var(--text-main); padding: 6px 12px; font-weight:600; display:flex; align-items:center; gap:6px;"
+        title="Mostrar ou ocultar o painel de roteiro">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" x2="8" y1="13" y2="13"></line><line x1="16" x2="8" y1="17" y2="17"></line></svg>
+        <span>Roteiro</span>
+      </button>
+
+      <!-- Botão Editor (Do lado direito de Roteiro) -->
       <button class="tab-btn" id="btnOpenStudioEditor"
         style="background: linear-gradient(135deg, rgba(236,72,153,0.2), rgba(249,115,22,0.15)); border:1px solid rgba(236,72,153,0.5); color:#fff; padding: 6px 12px; font-weight:700; display:flex; align-items:center; gap:6px;"
         title="Abrir o Editor de Cortes, Legendas Virais e Publicação">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" x2="8.12" y1="4" y2="15.88"></line><line x1="14.47" x2="20" y1="14.48" y2="20"></line><line x1="8.12" x2="12" y1="8.12" y2="12"></line></svg>
-        <span style="color:#f472b6;">Editor Pro</span>
-      </button>
-
-      <button class="tab-btn" id="btnTogglePrompterView"
-        style="background: rgba(255,255,255,0.06); border:1px solid var(--border-subtle); color:var(--text-main); padding: 6px 12px; font-weight:600; display:flex; align-items:center; gap:6px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" x2="8" y1="13" y2="13"></line><line x1="16" x2="8" y1="17" y2="17"></line></svg>
-        <span>Painel Roteiro</span>
+        <span style="color:#f472b6;">Editor</span>
       </button>
 
       <div class="rec-badge" id="recBadge">
@@ -1377,9 +1413,6 @@
             <select class="form-control" id="cameraSelect">
               <option value="">Carregando dispositivos...</option>
             </select>
-            <button type="button" class="btnLaunchNvidiaGpuEye" style="width:100%; margin-top:6px; background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.15)); border:1px solid rgba(16,185,129,0.4); color:#10b981; font-weight:700; font-size:11px; padding:6px 10px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-              <span>🚀 Iniciar Câmera AI com GPU (NVIDIA GTX 1650)</span>
-            </button>
           </div>
 
           <button class="btn-stream-toggle" id="btnToggleScreen">
@@ -1598,9 +1631,37 @@
             <div style="font-size:9.5px; color:var(--text-dim); margin-top:4px;">
               Centraliza a pupila e o foco da visão diretamente para a lente mesmo lendo o teleprompter.
             </div>
-            <button type="button" class="btnLaunchNvidiaGpuEye" style="width:100%; margin-top:8px; background:linear-gradient(135deg, rgba(16,185,129,0.18), rgba(6,182,212,0.18)); border:1px solid rgba(16,185,129,0.45); color:#10b981; font-weight:700; font-size:11px; padding:6px 10px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-              <span>🚀 Iniciar Câmera AI com GPU (NVIDIA GTX)</span>
-            </button>
+          </div>
+
+          <!-- ✨ EFEITOS NATURAIS & ILUMINAÇÃO DE ESTÚDIO -->
+          <div
+            style="font-size:11px; font-weight:700; text-transform:uppercase; color:#10b981; letter-spacing:0.5px; margin-top:12px; display:flex; align-items:center; gap:5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <span>✨ Efeitos Naturais & Iluminação de Estúdio</span>
+          </div>
+
+          <div class="form-group" style="margin-top:6px;">
+            <label class="form-label">
+              <span>💡 Iluminação Softbox / Ring Light Virtual</span>
+              <span class="slider-val" id="camStudioLightVal">0%</span>
+            </label>
+            <input type="range" id="camStudioLightSlider" min="0" max="100" step="5" value="0">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>✨ Pele de Estúdio / Soft Glow Natural</span>
+              <span class="slider-val" id="camSoftSkinVal">0%</span>
+            </label>
+            <input type="range" id="camSoftSkinSlider" min="0" max="100" step="5" value="0">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>👁️ Catchlight (Brilho e Vida no Olhar)</span>
+              <span class="slider-val" id="camCatchlightVal">0%</span>
+            </label>
+            <input type="range" id="camCatchlightSlider" min="0" max="100" step="5" value="0">
           </div>
 
           <!-- 🎬 EFEITOS CINEMATOGRÁFICOS & STUDIO FX -->
@@ -1612,18 +1673,30 @@
 
           <div class="form-group" style="margin-bottom:8px;">
             <label class="form-label" style="margin-bottom:5px;">Gradação de Cor (LUTs Hollywood & Studio):</label>
-            <div class="lut-matrix" id="lutPresetMatrix">
+            <div class="lut-matrix" id="lutPresetMatrix" style="grid-template-columns: repeat(3, 1fr);">
               <button type="button" class="btn-lut-preset active" data-lut="none">
                 <span>Natural</span>
                 <span style="font-size:9px; color:var(--text-dim);">Original</span>
               </button>
+              <button type="button" class="btn-lut-preset" data-lut="clean-studio">
+                <span style="color:#38bdf8;">Apple Studio</span>
+                <span style="font-size:9px; color:var(--text-dim);">Luz Neutra</span>
+              </button>
+              <button type="button" class="btn-lut-preset" data-lut="podcast-warm">
+                <span style="color:#fbbf24;">Podcast Pro</span>
+                <span style="font-size:9px; color:var(--text-dim);">Tons Ricos</span>
+              </button>
+              <button type="button" class="btn-lut-preset" data-lut="golden-hour">
+                <span style="color:#f59e0b;">Golden Hour</span>
+                <span style="font-size:9px; color:var(--text-dim);">Cinema 4K</span>
+              </button>
               <button type="button" class="btn-lut-preset" data-lut="warm">
-                <span style="color:#fbbf24;">Warm Gold</span>
+                <span style="color:#f97316;">Warm Gold</span>
                 <span style="font-size:9px; color:var(--text-dim);">Tons Vivos</span>
               </button>
               <button type="button" class="btn-lut-preset" data-lut="teal-orange">
-                <span style="color:#38bdf8;">Teal & Gold</span>
-                <span style="font-size:9px; color:var(--text-dim);">Cinema 4K</span>
+                <span style="color:#06b6d4;">Teal & Gold</span>
+                <span style="font-size:9px; color:var(--text-dim);">Hollywood</span>
               </button>
               <button type="button" class="btn-lut-preset" data-lut="moody">
                 <span style="color:#a78bfa;">Moody Dark</span>
@@ -1806,10 +1879,19 @@
     <section class="viewport-panel">
       <!-- Preview Zoom & Stage -->
       <div
-        style="display:flex; align-items:center; justify-content:space-between; width:100%; max-width:600px; padding:0 8px;">
-        <span
-          style="font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">📺
-          Prévia do Estúdio</span>
+        style="display:flex; align-items:center; justify-content:space-between; width:100%; max-width:600px; padding:0 8px; flex-wrap:wrap; gap:6px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span
+            style="font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">📺
+            Prévia do Estúdio</span>
+          <!-- AVISO VISUAL NO TOPO DA PRÉVIA: TELA SEM ÁUDIO -->
+          <button type="button" id="badgeScreenNoAudioTop"
+            style="display:none; background:rgba(245,158,11,0.22); border:1.5px solid #f59e0b; color:#fbbf24; padding:3px 10px; border-radius:14px; font-size:11px; font-weight:800; cursor:pointer; align-items:center; gap:5px; box-shadow: 0 0 12px rgba(245,158,11,0.3);"
+            title="Clique aqui para recompartilhar a tela com o som do sistema ativado">
+            <span>⚠️ Tela Sem Áudio</span>
+            <span style="background:rgba(0,0,0,0.4); padding:1px 6px; border-radius:4px; font-size:9.5px; color:#fff; font-weight:700;">🔄 Ativar Som</span>
+          </button>
+        </div>
         <div
           style="display:flex; align-items:center; gap:6px; background:rgba(0,0,0,0.4); padding:4px 10px; border-radius:20px; border:1px solid var(--border-subtle);">
           <span style="font-size:11px; color:var(--text-muted);">Tamanho Prévia:</span>
@@ -1822,6 +1904,13 @@
       </div>
 
       <div class="canvas-stage" id="canvasStageContainer">
+        <!-- Floating Warning sobre o Canvas quando tela estiver sem som -->
+        <div id="stageScreenNoAudioWarning" style="display:none; position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:60; background:rgba(15,23,42,0.94); border:1.5px solid #f59e0b; border-radius:20px; padding:5px 14px; backdrop-filter:blur(8px); box-shadow:0 6px 20px rgba(0,0,0,0.7), 0 0 14px rgba(245,158,11,0.3); align-items:center; gap:8px; cursor:pointer;" title="Clique para recompartilhar com som do sistema">
+          <span style="font-size:13px;">⚠️</span>
+          <span style="font-size:11.5px; font-weight:800; color:#fbbf24;">Tela sem áudio do sistema</span>
+          <span style="font-size:10px; font-weight:800; background:#f59e0b; color:#000; padding:2px 8px; border-radius:10px;">🔄 Recompartilhar com Som</span>
+        </div>
+
         <!-- Live Hook 3s Indicator -->
         <div class="live-hook-badge" id="hookBadge">
           <span>🎣 Gancho:</span>
@@ -1872,28 +1961,27 @@
       <div style="display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; max-width:600px;">
         <div class="floating-toolbar">
           <button class="btn-cta-rec btn-rec-start" id="btnStartRecord">
-            <span>🔴 Iniciar Gravação (R)</span>
+            <span>🔴 Iniciar Gravação (F9)</span>
           </button>
           <button class="btn-cta-rec btn-rec-pause" id="btnPauseRecord" style="display:none;">
-            <span>⏸️ Pausar (Espaço)</span>
+            <span>⏸️ Pausar (F8)</span>
           </button>
           <button class="btn-cta-rec btn-rec-resume" id="btnResumeRecord" style="display:none;">
-            <span>▶️ Gravar Próximo (Espaço)</span>
+            <span>▶️ Gravar Próximo (F8)</span>
           </button>
           <button class="btn-cta-rec btn-rec-stop" id="btnStopRecord" style="display:none;">
-            <span>✅ Finalizar & Unir Vídeo</span>
+            <span>✅ Finalizar & Unir Vídeo (F9)</span>
           </button>
           <button type="button" class="btn-toolbar-trash" id="btnDiscardAllTakes" onclick="promptDiscardAllTakes()" title="Descartar gravação e recomeçar" style="display:none;">
             <span>🗑️</span>
           </button>
         </div>
         <div
-          style="font-size:11px; color:var(--text-dim); display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; text-align:center;">
+          style="font-size:11.5px; display:flex; align-items:center; justify-content:center; text-align:center;">
           <span
-            style="color:var(--primary); font-weight:700; background:rgba(249,115,22,0.15); padding:3px 10px; border-radius:12px; border:1px solid var(--primary-glow);">⚡
-            Atalho Global: [F9] Gravar / Parar • [F8] Pausar Trecho</span>
-          <span style="color:var(--text-dim);">•</span>
-          <span>No Navegador: <strong>[Espaço]</strong> Iniciar/Pausar • <strong>[R]</strong> Gravar/Finalizar</span>
+            style="color:#f97316; font-weight:800; background:rgba(249,115,22,0.15); padding:5px 14px; border-radius:12px; border:1px solid rgba(249,115,22,0.35); box-shadow: 0 0 10px rgba(249,115,22,0.2);">
+            ⚡ Atalho: [F9] Gravar / Parar • [F8] Pausar / Retomar
+          </span>
         </div>
       </div>
     </section>
@@ -2169,11 +2257,25 @@
 
   <!-- MODAL: Preview & Download Final Video com Auto-Corte de Silêncio -->
   <div class="modal-backdrop" id="modalPreview">
-    <div class="modal-content" style="max-width: 620px;">
+    <div class="modal-content" style="max-width: 650px;">
       <div class="modal-header">
         <span class="modal-title">🎉 Gravação Finalizada com Sucesso!</span>
-        <button class="tab-btn" id="btnClosePreview" style="padding:4px 8px; font-size:14px;">✕</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="tab-btn" id="btnMinimizePreview" title="Minimizar e continuar gravando novos vídeos no estúdio"
+            style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-medium); color: #fff; padding: 5px 11px; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; gap: 5px; cursor: pointer; border-radius: 6px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>🗕 Minimizar (Gravar Outro)</span>
+          </button>
+          <button class="tab-btn" id="btnClosePreview" style="padding:4px 8px; font-size:14px;" title="Fechar modal">✕</button>
+        </div>
       </div>
+
+      <!-- BARRA SELETORA MULTI-VÍDEOS DA SESSÃO (SUB-HEADER DEDICADO ESPAÇOSO) -->
+      <div id="multiVideoSessionBar" style="display: none; width: 100%; background: #0b1120; border-bottom: 1px solid var(--border-subtle); padding: 10px 16px; gap: 8px; overflow-x: auto; white-space: nowrap; align-items: center; box-sizing: border-box; flex-shrink: 0; min-height: 48px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #f97316; margin-right: 6px; display: flex; align-items: center; gap: 4px; flex-shrink: 0;">🎬 Vídeos na Fila:</span>
+        <div id="multiVideoSessionPills" style="display: flex; gap: 8px; align-items: center; flex-wrap: nowrap;"></div>
+      </div>
+
       <div class="modal-body" style="align-items:center;">
         <video id="previewPlayer" controls
           style="max-height:42vh; width:auto; border-radius:10px; border:1px solid var(--border-subtle); background:#000;"></video>
@@ -2197,6 +2299,23 @@
               <button type="button" class="btn-silence-pill" data-mode="aggressive" title="Remove pausas acima de 180ms">⚡ Agressivo (180ms)</button>
               <button type="button" class="btn-silence-pill active" data-mode="balanced" title="Remove pausas acima de 280ms">🔥 Equilibrado (280ms)</button>
               <button type="button" class="btn-silence-pill" data-mode="smooth" title="Remove pausas acima de 450ms">🌿 Suave (450ms)</button>
+            </div>
+          </div>
+
+          <!-- Seletor de Aceleração / Velocidade de Fala -->
+          <div style="padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+              <span style="font-size:11px; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:4px;">
+                🚀 Velocidade & Ritmo da Fala:
+              </span>
+              <span id="previewSpeedValBadge" style="font-size:10.5px; font-weight:800; color:#38bdf8; background:rgba(56,189,248,0.15); padding:2px 7px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);">1.0x (Normal)</span>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px;">
+              <button type="button" class="btn-speed-pill active" data-speed="1.0" title="Velocidade natural">1.0x</button>
+              <button type="button" class="btn-speed-pill" data-speed="1.15" title="Ritmo suave (+15%)">1.15x</button>
+              <button type="button" class="btn-speed-pill" data-speed="1.25" title="Ritmo dinâmico (+25%)">1.25x</button>
+              <button type="button" class="btn-speed-pill" data-speed="1.5" title="Ritmo acelerado (+50%)">1.5x</button>
+              <button type="button" class="btn-speed-pill" data-speed="2.0" title="Duas vezes mais rápido (+100%)">2.0x</button>
             </div>
           </div>
 
@@ -2318,6 +2437,9 @@
     let currentLut = 'none';
     let camBlur = 0;
     let camVignette = 0;
+    let camStudioLight = 0;
+    let camSoftSkin = 0;
+    let camCatchlight = 0;
     let captionStyle = 'hormozi-yellow';
 
     let screenZoom = 1.0;
@@ -2563,8 +2685,16 @@ Regras:
 
     // Alternar exibição do Teleprompter no Topo
     if (btnToggleHeaderPrompter && headerPrompterStrip) {
+      // Restaura estado salvo — default é oculto
+      const savedPromptState = localStorage.getItem('csdigital_show_header_prompter');
+      if (savedPromptState === 'true') {
+        headerPrompterStrip.style.display = 'flex';
+        btnToggleHeaderPrompter.style.background = 'rgba(249,115,22,0.22)';
+        btnToggleHeaderPrompter.style.borderColor = 'var(--primary)';
+      }
+
       btnToggleHeaderPrompter.addEventListener('click', () => {
-        const isHidden = headerPrompterStrip.style.display === 'none';
+        const isHidden = headerPrompterStrip.style.display === 'none' || headerPrompterStrip.style.display === '';
         headerPrompterStrip.style.display = isHidden ? 'flex' : 'none';
         btnToggleHeaderPrompter.style.background = isHidden ? 'rgba(249,115,22,0.22)' : 'rgba(255,255,255,0.06)';
         btnToggleHeaderPrompter.style.borderColor = isHidden ? 'var(--primary)' : 'var(--border-subtle)';
@@ -2920,20 +3050,8 @@ Regras:
           savedCameraId = activeSettings.deviceId;
         }
 
-        // Se o usuário selecionou uma Câmera Virtual (ex: NVIDIA / OBS), desativa a IA interna do navegador para não gerar conflito de tremor
-        if (cameraSelect && cameraSelect.selectedOptions && cameraSelect.selectedOptions[0]) {
-          const camLabel = (cameraSelect.selectedOptions[0].text || '').toLowerCase();
-          if (camLabel.includes('virtual') || camLabel.includes('obs') || camLabel.includes('unity') || camLabel.includes('nvidia')) {
-            if (chkEyeContactAI && chkEyeContactAI.checked) {
-              chkEyeContactAI.checked = false;
-              isEyeContactActive = false;
-              if (eyeContactStatus) {
-                eyeContactStatus.innerText = '✓ Câmera Virtual GPU (IA do navegador em pausa p/ máxima fluidez)';
-                eyeContactStatus.style.color = '#10b981';
-              }
-            }
-          }
-        }
+        // Nota: câmera NVIDIA/OBS/Virtual é compatível com Eye Contact AI do navegador
+        // O usuário decide manualmente se quer combinar os efeitos
       } catch (err) {
         console.error('Erro ao iniciar câmera:', err);
         if (btnToggleCam) {
@@ -2967,15 +3085,65 @@ Regras:
       });
     }
 
-    // ── SCREEN SHARE ──
+    // ── SCREEN SHARE (COM DETECÇÃO AUTOMÁTICA DE ÁUDIO DO SISTEMA) ──
     const btnToggleScreen = document.getElementById('btnToggleScreen');
+    const screenAudioMissingAlert = document.getElementById('screenAudioMissingAlert');
+    const btnReShareWithAudio = document.getElementById('btnReShareWithAudio');
+    const btnDismissScreenAudioAlert = document.getElementById('btnDismissScreenAudioAlert');
+    const badgeScreenNoAudioTop = document.getElementById('badgeScreenNoAudioTop');
+    const stageScreenNoAudioWarning = document.getElementById('stageScreenNoAudioWarning');
+
+    function updateScreenButtonUI() {
+      if (!btnToggleScreen) return;
+      const span = btnToggleScreen.querySelector('span:first-child');
+      if (!screenStream) {
+        btnToggleScreen.classList.remove('active');
+        btnToggleScreen.style.borderColor = '';
+        btnToggleScreen.style.background = '';
+        if (span) span.innerText = '🖥️ Compartilhar Tela / Janela';
+        if (screenAudioMissingAlert) screenAudioMissingAlert.style.display = 'none';
+        if (badgeScreenNoAudioTop) badgeScreenNoAudioTop.style.display = 'none';
+        if (stageScreenNoAudioWarning) stageScreenNoAudioWarning.style.display = 'none';
+        return;
+      }
+
+      const hasScreenAudio = screenStream.getAudioTracks().length > 0;
+      btnToggleScreen.classList.add('active');
+
+      if (hasScreenAudio) {
+        btnToggleScreen.style.borderColor = 'var(--success)';
+        btnToggleScreen.style.background = 'rgba(16, 185, 129, 0.15)';
+        if (span) span.innerText = '🖥️ Tela (Áudio do Sistema Ativo 🔊)';
+        if (screenAudioMissingAlert) screenAudioMissingAlert.style.display = 'none';
+        if (badgeScreenNoAudioTop) badgeScreenNoAudioTop.style.display = 'none';
+        if (stageScreenNoAudioWarning) stageScreenNoAudioWarning.style.display = 'none';
+      } else {
+        btnToggleScreen.style.borderColor = '#f59e0b';
+        btnToggleScreen.style.background = 'rgba(245, 158, 11, 0.15)';
+        if (span) span.innerText = '🖥️ Tela (Sem Áudio do Sistema ⚠️)';
+        if (badgeScreenNoAudioTop) badgeScreenNoAudioTop.style.display = 'inline-flex';
+        if (stageScreenNoAudioWarning) stageScreenNoAudioWarning.style.display = 'flex';
+      }
+    }
+
+    function reShareScreenWithAudio() {
+      if (screenAudioMissingAlert) screenAudioMissingAlert.style.display = 'none';
+      if (screenStream) {
+        screenStream.getTracks().forEach(t => t.stop());
+        screenStream = null;
+        rawScreen.srcObject = null;
+        updateScreenButtonUI();
+      }
+      if (btnToggleScreen) btnToggleScreen.click();
+    }
+
     if (btnToggleScreen) {
       btnToggleScreen.addEventListener('click', async () => {
         if (screenStream) {
           screenStream.getTracks().forEach(t => t.stop());
           screenStream = null;
           rawScreen.srcObject = null;
-          btnToggleScreen.classList.remove('active');
+          updateScreenButtonUI();
         } else {
           try {
             screenStream = await navigator.mediaDevices.getDisplayMedia({
@@ -2997,17 +3165,36 @@ Regras:
             rawScreen.srcObject = screenStream;
             rawScreen.onloadedmetadata = () => { rawScreen.play().catch(() => { }); };
             await rawScreen.play().catch(() => { });
-            btnToggleScreen.classList.add('active');
+
+            const hasScreenAudio = screenStream.getAudioTracks().length > 0;
+            updateScreenButtonUI();
+
+            if (!hasScreenAudio) {
+              if (screenAudioMissingAlert) screenAudioMissingAlert.style.display = 'block';
+            } else {
+              if (screenAudioMissingAlert) screenAudioMissingAlert.style.display = 'none';
+              showHotkeyToast('✅ Tela compartilhada com som do sistema ativado!');
+            }
 
             screenStream.getVideoTracks()[0].onended = () => {
               screenStream = null;
               rawScreen.srcObject = null;
-              btnToggleScreen.classList.remove('active');
+              updateScreenButtonUI();
             };
           } catch (err) {
             console.log('Compartilhamento cancelado:', err);
           }
         }
+      });
+    }
+
+    if (btnReShareWithAudio) btnReShareWithAudio.addEventListener('click', reShareScreenWithAudio);
+    if (badgeScreenNoAudioTop) badgeScreenNoAudioTop.addEventListener('click', reShareScreenWithAudio);
+    if (stageScreenNoAudioWarning) stageScreenNoAudioWarning.addEventListener('click', reShareScreenWithAudio);
+
+    if (btnDismissScreenAudioAlert) {
+      btnDismissScreenAudioAlert.addEventListener('click', () => {
+        if (screenAudioMissingAlert) screenAudioMissingAlert.style.display = 'none';
       });
     }
 
@@ -3020,23 +3207,46 @@ Regras:
         audioStream.getTracks().forEach(t => t.stop());
         audioStream = null;
       }
+      const targetId = deviceId || savedMicId || (micSelect ? micSelect.value : '');
+      if (targetId) {
+        savedMicId = targetId;
+        localStorage.setItem('csdigital_saved_mic', targetId);
+      }
       try {
-        const audioConstraints = {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        };
-        if (deviceId) {
-          audioConstraints.deviceId = { ideal: deviceId };
+        let stream = null;
+        if (targetId) {
+          try {
+            // Tenta forçar exatamente o microfone selecionado
+            stream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                deviceId: { exact: targetId },
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+              }
+            });
+          } catch (exactErr) {
+            console.warn('Microfone exact falhou, tentando ideal:', exactErr);
+            stream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                deviceId: { ideal: targetId },
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+              }
+            });
+          }
+        } else {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          });
         }
 
-        try {
-          audioStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
-        } catch (exactErr) {
-          console.warn('Tentando microfone padrão:', exactErr);
-          audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        }
-
+        audioStream = stream;
         setupAudioAnalyzer(audioStream);
 
         if (btnToggleMic) {
@@ -3045,6 +3255,7 @@ Regras:
           if (span) span.innerText = '🎙️ Microfone Ativo';
         }
 
+        // Atualiza a lista sem perder a seleção atual
         await listDevices();
 
         const activeTrack = audioStream.getAudioTracks()[0];
@@ -3052,6 +3263,7 @@ Regras:
         if (activeSettings && activeSettings.deviceId && micSelect) {
           micSelect.value = activeSettings.deviceId;
           savedMicId = activeSettings.deviceId;
+          localStorage.setItem('csdigital_saved_mic', savedMicId);
         }
       } catch (err) {
         console.warn('Erro ao conectar microfone:', err);
@@ -3248,6 +3460,33 @@ Regras:
       camVignetteSlider.addEventListener('input', (e) => {
         camVignette = parseInt(e.target.value, 10);
         if (camVignetteVal) camVignetteVal.innerText = camVignette + '%';
+      });
+    }
+
+    const camStudioLightSlider = document.getElementById('camStudioLightSlider');
+    const camStudioLightVal = document.getElementById('camStudioLightVal');
+    if (camStudioLightSlider) {
+      camStudioLightSlider.addEventListener('input', (e) => {
+        camStudioLight = parseInt(e.target.value, 10);
+        if (camStudioLightVal) camStudioLightVal.innerText = camStudioLight + '%';
+      });
+    }
+
+    const camSoftSkinSlider = document.getElementById('camSoftSkinSlider');
+    const camSoftSkinVal = document.getElementById('camSoftSkinVal');
+    if (camSoftSkinSlider) {
+      camSoftSkinSlider.addEventListener('input', (e) => {
+        camSoftSkin = parseInt(e.target.value, 10);
+        if (camSoftSkinVal) camSoftSkinVal.innerText = camSoftSkin + '%';
+      });
+    }
+
+    const camCatchlightSlider = document.getElementById('camCatchlightSlider');
+    const camCatchlightVal = document.getElementById('camCatchlightVal');
+    if (camCatchlightSlider) {
+      camCatchlightSlider.addEventListener('input', (e) => {
+        camCatchlight = parseInt(e.target.value, 10);
+        if (camCatchlightVal) camCatchlightVal.innerText = camCatchlight + '%';
       });
     }
 
@@ -3640,6 +3879,7 @@ Regras:
     let isFaceMeshLoading = false;
     let isProcessingFaceMesh = false;
     let lastFaceDetectionTime = 0;
+    let lastFaceMeshSentTime = 0;
 
     // Suavização temporal do deslocamento (Left & Right)
     let smoothLdx = 0;
@@ -3647,10 +3887,10 @@ Regras:
     let smoothRdx = 0;
     let smoothRdy = 0;
 
-    // Canvas offscreen para extração ultra-rápida de frames (sem travar o Canvas 60fps)
+    // Canvas offscreen para extração consistente de frames
     const eyeDetectCanvas = document.createElement('canvas');
-    eyeDetectCanvas.width = 480;
-    eyeDetectCanvas.height = 360;
+    eyeDetectCanvas.width = 640;
+    eyeDetectCanvas.height = 480;
     const eyeDetectCtx = eyeDetectCanvas.getContext('2d', { willReadFrequently: true });
 
     async function loadScriptAsync(src) {
@@ -3666,26 +3906,41 @@ Regras:
       });
     }
 
+    // Arquivos locais e CDNs de fallback para os binários WASM do MediaPipe
+    const MEDIAPIPE_CDN_LIST = [
+      (f) => `/libs/face_mesh/${f}`,
+      (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`,
+      (f) => `https://unpkg.com/@mediapipe/face_mesh@0.4.1633559619/${f}`
+    ];
+
     async function ensureFaceMeshLoaded() {
       if (typeof FaceMesh !== 'undefined') return true;
-      try {
-        await loadScriptAsync('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js');
-        await loadScriptAsync('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js');
-        return typeof FaceMesh !== 'undefined';
-      } catch (e) {
-        console.warn('Erro carregando FaceMesh de jsdelivr, tentando unpkg:', e);
+      // Prioriza biblioteca local do servidor, com fallback para CDN
+      const scriptSources = [
+        '/libs/face_mesh/face_mesh.js',
+        'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js',
+        'https://unpkg.com/@mediapipe/face_mesh/face_mesh.js'
+      ];
+      for (const src of scriptSources) {
         try {
-          await loadScriptAsync('https://unpkg.com/@mediapipe/face_mesh/face_mesh.js');
-          return typeof FaceMesh !== 'undefined';
-        } catch (err2) {
-          console.error('Falha ao carregar FaceMesh:', err2);
-          return false;
+          await loadScriptAsync(src);
+          if (typeof FaceMesh !== 'undefined') return true;
+        } catch (e) {
+          console.warn('Tentando próxima fonte para FaceMesh...', e);
         }
       }
+      return typeof FaceMesh !== 'undefined';
     }
 
     async function initMediaPipeIris() {
-      if (faceMeshInstance || isFaceMeshLoading) return;
+      if (faceMeshInstance) {
+        if (eyeContactStatus && isEyeContactActive) {
+          eyeContactStatus.innerText = '🟢 Olhar Centralizado na Câmera';
+          eyeContactStatus.style.color = '#10b981';
+        }
+        return;
+      }
+      if (isFaceMeshLoading) return;
       isFaceMeshLoading = true;
       if (eyeContactStatus) {
         eyeContactStatus.innerText = '⏳ Carregando IA...';
@@ -3696,51 +3951,64 @@ Regras:
         const loaded = await ensureFaceMeshLoaded();
         if (!loaded) {
           if (eyeContactStatus) {
-            eyeContactStatus.innerText = '⚠️ Erro ao carregar IA';
+            eyeContactStatus.innerText = '⚠️ Sem conexão (IA offline)';
             eyeContactStatus.style.color = 'var(--danger)';
           }
+          isFaceMeshLoading = false;
           return;
         }
 
-        faceMeshInstance = new FaceMesh({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-        });
-
-        faceMeshInstance.setOptions({
-          maxNumFaces: 1,
-          refineLandmarks: true,
-          minDetectionConfidence: 0.4,
-          minTrackingConfidence: 0.4
-        });
-
-        faceMeshInstance.onResults((results) => {
-          if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-            eyeLandmarksData = results.multiFaceLandmarks[0];
-            lastFaceDetectionTime = Date.now();
-            if (eyeContactStatus && isEyeContactActive) {
-              eyeContactStatus.innerText = '🟢 Olhar Centralizado na Câmera';
-              eyeContactStatus.style.color = '#10b981';
-            }
-          } else {
-            eyeLandmarksData = null;
-            if (eyeContactStatus && isEyeContactActive) {
-              if (Date.now() - lastFaceDetectionTime > 1500) {
-                eyeContactStatus.innerText = '🟡 Procurando Rosto...';
-                eyeContactStatus.style.color = '#fbbf24';
+        // Tenta inicializar com cada CDN de WASM até encontrar uma que funcione
+        let initError = null;
+        for (const locateFn of MEDIAPIPE_CDN_LIST) {
+          try {
+            faceMeshInstance = new FaceMesh({ locateFile: locateFn });
+            faceMeshInstance.setOptions({
+              maxNumFaces: 1,
+              refineLandmarks: true,
+              minDetectionConfidence: 0.40,
+              minTrackingConfidence: 0.40
+            });
+            faceMeshInstance.onResults((results) => {
+              isProcessingFaceMesh = false;
+              if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                eyeLandmarksData = results.multiFaceLandmarks[0];
+                lastFaceDetectionTime = performance.now();
+                if (eyeContactStatus && isEyeContactActive) {
+                  eyeContactStatus.innerText = '🟢 Olhar Centralizado na Câmera';
+                  eyeContactStatus.style.color = '#10b981';
+                }
+              } else {
+                eyeLandmarksData = null;
+                if (eyeContactStatus && isEyeContactActive) {
+                  if (performance.now() - lastFaceDetectionTime > 1200) {
+                    eyeContactStatus.innerText = '🟡 Procurando Rosto...';
+                    eyeContactStatus.style.color = '#fbbf24';
+                  }
+                }
               }
-            }
+            });
+            await faceMeshInstance.initialize();
+            initError = null;
+            break; // Sucesso — para o loop
+          } catch (err) {
+            console.warn('FaceMesh falhou com CDN, tentando próxima...', err);
+            initError = err;
+            faceMeshInstance = null;
           }
-        });
+        }
 
-        await faceMeshInstance.initialize();
+        if (initError) throw initError;
+
         if (eyeContactStatus && isEyeContactActive) {
           eyeContactStatus.innerText = '🟢 IA Ativa (Calibrada)';
           eyeContactStatus.style.color = '#10b981';
         }
       } catch (err) {
         console.warn('Erro ao inicializar MediaPipe Iris:', err);
+        faceMeshInstance = null;
         if (eyeContactStatus) {
-          eyeContactStatus.innerText = '⚠️ Falha no modelo';
+          eyeContactStatus.innerText = '⚠️ Verifique sua internet';
           eyeContactStatus.style.color = 'var(--danger)';
         }
       } finally {
@@ -3761,8 +4029,8 @@ Regras:
         localStorage.setItem('csdigital_eye_contact_active', isEyeContactActive ? 'true' : 'false');
         if (isEyeContactActive) {
           if (eyeContactStatus) {
-            eyeContactStatus.innerText = '⏳ Ativando...';
-            eyeContactStatus.style.color = '#fbbf24';
+            eyeContactStatus.innerText = faceMeshInstance ? '🟢 Olhar Centralizado na Câmera' : '⏳ Ativando...';
+            eyeContactStatus.style.color = faceMeshInstance ? '#10b981' : '#fbbf24';
           }
           await initMediaPipeIris();
         } else {
@@ -3813,25 +4081,6 @@ Regras:
       });
     });
 
-    // ── ATALHOS GLOBAIS VIA SSE (F9 = REC / F8 = PAUSA EM QUALQUER JANELA DO WINDOWS) ──
-    try {
-      const sse = new EventSource('/events');
-      sse.onmessage = (e) => {
-        try {
-          const ev = JSON.parse(e.data);
-          if (ev.tipo === 'studio-toggle-rec') {
-            if (btnToggleRec) btnToggleRec.click();
-          } else if (ev.tipo === 'studio-toggle-pause') {
-            if (btnPauseRec) btnPauseRec.click();
-          }
-        } catch (err) {}
-      };
-      sse.onerror = () => {
-        // SSE auto-reconnects
-      };
-    } catch (sseErr) {
-      console.warn('SSE indisponível em modo standalone offline:', sseErr);
-    }
 
     const aspectSelect = document.getElementById('aspectSelect');
     aspectSelect.addEventListener('change', (e) => {
@@ -4124,8 +4373,11 @@ Regras:
       if (camSaturation !== 100) filterParts.push(`saturate(${camSaturation}%)`);
       if (camBlur > 0) filterParts.push(`blur(${camBlur}px)`);
 
-      // LUTs Cinematográficas
-      if (currentLut === 'warm') filterParts.push('sepia(14%) saturate(125%) contrast(108%)');
+      // LUTs Cinematográficas & Studio Presets
+      if (currentLut === 'clean-studio') filterParts.push('brightness(103%) contrast(106%) saturate(108%)');
+      else if (currentLut === 'podcast-warm') filterParts.push('sepia(10%) saturate(122%) contrast(110%) brightness(102%)');
+      else if (currentLut === 'golden-hour') filterParts.push('sepia(18%) saturate(135%) contrast(108%) hue-rotate(-5deg)');
+      else if (currentLut === 'warm') filterParts.push('sepia(14%) saturate(125%) contrast(108%)');
       else if (currentLut === 'teal-orange') filterParts.push('contrast(122%) saturate(130%) hue-rotate(-10deg)');
       else if (currentLut === 'moody') filterParts.push('contrast(135%) saturate(85%) brightness(95%)');
       else if (currentLut === 'cyber') filterParts.push('contrast(130%) saturate(165%) hue-rotate(15deg)');
@@ -4145,40 +4397,66 @@ Regras:
       }
       ctx.restore();
 
+      // ✨ PELE DE ESTÚDIO / SOFT GLOW NATURAL
+      if (camSoftSkin > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'soft-light';
+        ctx.globalAlpha = (camSoftSkin / 100) * 0.45;
+        ctx.filter = 'blur(6px) brightness(106%) contrast(96%)';
+        if (isCamMirrored) {
+          ctx.translate(x + w, y);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+        } else {
+          ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
+        }
+        ctx.restore();
+      }
+
+      // 💡 ILUMINAÇÃO SOFTBOX / RING LIGHT VIRTUAL
+      if (camStudioLight > 0) {
+        ctx.save();
+        const lightX = x + w / 2;
+        const lightY = y + h * 0.38;
+        const lightRadius = Math.max(w, h) * 0.65;
+        const gradLight = ctx.createRadialGradient(lightX, lightY, Math.min(w, h) * 0.1, lightX, lightY, lightRadius);
+        gradLight.addColorStop(0, `rgba(255, 248, 235, ${(camStudioLight / 100) * 0.32})`);
+        gradLight.addColorStop(0.5, `rgba(255, 240, 220, ${(camStudioLight / 100) * 0.15})`);
+        gradLight.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalCompositeOperation = 'screen';
+        ctx.fillStyle = gradLight;
+        ctx.fillRect(x, y, w, h);
+        ctx.restore();
+      }
+
       // ── AI EYE CONTACT (CORREÇÃO DE FOCO VISUAL PARA A LENTE DA CÂMERA) ──
       if (isEyeContactActive && eyeLandmarksData && eyeLandmarksData.length >= 468) {
         try {
+          // Conversão correta: landmarks normalizados 0-1 → canvas
+          // vw/vh = dimensões reais do vídeo (usadas para destransformar)
           const lmHelper = (idx) => {
             const lm = eyeLandmarksData[idx];
             if (!lm) return null;
-            const normCropX = (lm.x * vw - sx) / sw;
-            const normCropY = (lm.y * vh - sy) / sh;
-            return {
-              canvasX: isCamMirrored ? (x + w - (normCropX * w)) : (x + (normCropX * w)),
-              canvasY: y + (normCropY * h),
-              normX: lm.x,
-              normY: lm.y
-            };
+            const vidX = lm.x * vw;
+            const vidY = lm.y * vh;
+            const normCropX = (vidX - sx) / sw;
+            const normCropY = (vidY - sy) / sh;
+            const cx = isCamMirrored ? (x + w - normCropX * w) : (x + normCropX * w);
+            const cy = y + normCropY * h;
+            return { canvasX: cx, canvasY: cy };
           };
 
-          // Processamento do Olho Esquerdo & Olho Direito
           const eyeConfigs = [
             {
               isLeft: true,
               irisIdx: 468,
-              outerIdx: 33,
-              innerIdx: 133,
-              topIdx: 159,
-              botIdx: 145,
+              outerIdx: 33, innerIdx: 133, topIdx: 159, botIdx: 145,
               contour: [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
             },
             {
               isLeft: false,
               irisIdx: 473,
-              outerIdx: 263,
-              innerIdx: 362,
-              topIdx: 386,
-              botIdx: 374,
+              outerIdx: 263, innerIdx: 362, topIdx: 386, botIdx: 374,
               contour: [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
             }
           ];
@@ -4186,29 +4464,30 @@ Regras:
           for (const cfg of eyeConfigs) {
             const pOuter = lmHelper(cfg.outerIdx);
             const pInner = lmHelper(cfg.innerIdx);
-            const pTop = lmHelper(cfg.topIdx);
-            const pBot = lmHelper(cfg.botIdx);
+            const pTop   = lmHelper(cfg.topIdx);
+            const pBot   = lmHelper(cfg.botIdx);
             if (!pOuter || !pInner || !pTop || !pBot) continue;
 
-            const targetCanvasX = (pOuter.canvasX + pInner.canvasX) / 2;
-            const targetCanvasY = (pTop.canvasY + pBot.canvasY) / 2;
-
-            let curIrisCanvasX = targetCanvasX;
-            let curIrisCanvasY = targetCanvasY;
-            const pIris = (eyeLandmarksData.length >= 478) ? lmHelper(cfg.irisIdx) : null;
-            if (pIris) {
-              curIrisCanvasX = pIris.canvasX;
-              curIrisCanvasY = pIris.canvasY;
-            }
-
-            const rawDx = (targetCanvasX - curIrisCanvasX) * (1.1 * eyeIntensity);
-            const rawDy = (targetCanvasY - curIrisCanvasY) * (1.1 * eyeIntensity);
-
             const eyeW = Math.hypot(pOuter.canvasX - pInner.canvasX, pOuter.canvasY - pInner.canvasY);
-            const eyeH = Math.hypot(pTop.canvasY - pBot.canvasY, pTop.canvasX - pBot.canvasX);
-            const maxShiftX = eyeW * 0.35;
-            const maxShiftY = eyeH * 0.45;
+            const eyeH = Math.hypot(pTop.canvasY   - pBot.canvasY,   pTop.canvasX   - pBot.canvasX);
+            if (eyeW < 8 || eyeH < 4) continue;
 
+            const eyeCenterX = (pOuter.canvasX + pInner.canvasX) / 2;
+            const eyeCenterY = (pTop.canvasY   + pBot.canvasY)   / 2;
+
+            const pIris = (eyeLandmarksData.length > cfg.irisIdx) ? lmHelper(cfg.irisIdx) : null;
+            const irisX = pIris ? pIris.canvasX : eyeCenterX;
+            const irisY = pIris ? pIris.canvasY : eyeCenterY;
+
+            // Alvo: centro do olho, levemente elevado para olhar para a lente
+            const targetX = eyeCenterX;
+            const targetY = eyeCenterY - eyeH * 0.18 * eyeIntensity;
+
+            let rawDx = (targetX - irisX) * eyeIntensity;
+            let rawDy = (targetY - irisY) * eyeIntensity;
+
+            const maxShiftX = eyeW * 0.22;
+            const maxShiftY = eyeH * 0.32;
             const clampedDx = Math.max(-maxShiftX, Math.min(maxShiftX, rawDx));
             const clampedDy = Math.max(-maxShiftY, Math.min(maxShiftY, rawDy));
 
@@ -4220,35 +4499,54 @@ Regras:
               smoothRdy = smoothRdy * 0.6 + clampedDy * 0.4;
             }
 
-            const activeShiftX = cfg.isLeft ? smoothLdx : smoothRdx;
-            const activeShiftY = cfg.isLeft ? smoothLdy : smoothRdy;
+            const shiftX = cfg.isLeft ? smoothLdx : smoothRdx;
+            const shiftY = cfg.isLeft ? smoothLdy : smoothRdy;
 
-            // Recorta estritamente o contorno anatômico das pálpebras (sem mover a pele nem os cílios)
+            if (Math.abs(shiftX) < 0.5 && Math.abs(shiftY) < 0.5) continue;
+
+            // ── Clip ao contorno anatômico das pálpebras ──
             ctx.save();
             ctx.beginPath();
-            cfg.contour.forEach((idx, i) => {
+            let first = true;
+            for (const idx of cfg.contour) {
               const pt = lmHelper(idx);
-              if (pt) {
-                if (i === 0) ctx.moveTo(pt.canvasX, pt.canvasY);
-                else ctx.lineTo(pt.canvasX, pt.canvasY);
-              }
-            });
+              if (!pt) continue;
+              if (first) { ctx.moveTo(pt.canvasX, pt.canvasY); first = false; }
+              else ctx.lineTo(pt.canvasX, pt.canvasY);
+            }
             ctx.closePath();
             ctx.clip();
 
-            if (filterParts.length > 0) {
-              ctx.filter = filterParts.join(' ');
-            }
+            // ── Estratégia: re-desenhar o vídeo completo com a mesma transformação
+            //    do render base, mas transladado por (shiftX, shiftY).
+            //    Isso evita qualquer cálculo inverso de coordenadas e funciona
+            //    corretamente com zoom, pan e mirror. ──
+            if (filterParts.length > 0) ctx.filter = filterParts.join(' ');
 
-            // Renderiza o globo ocular corrigido para o centro
+            // Re-renderiza o vídeo com a MESMA transformação do render base
+            // deslocado por (shiftX, shiftY) — sem nenhum cálculo inverso.
+            // O clip já restringe a área visível ao contorno das pálpebras.
             if (isCamMirrored) {
-              ctx.translate(x + w + activeShiftX, y + activeShiftY);
+              ctx.translate(x + w + shiftX, y + shiftY);
               ctx.scale(-1, 1);
               ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
             } else {
-              ctx.drawImage(video, sx, sy, sw, sh, x + activeShiftX, y + activeShiftY, w, h);
+              ctx.translate(shiftX, shiftY);
+              ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
             }
+
             ctx.restore();
+
+            // Catchlight (brilho no olho) apenas se o slider for ativado
+            if (camCatchlight > 0) {
+              ctx.save();
+              ctx.fillStyle = `rgba(255,255,255,${(camCatchlight/100)*0.6})`;
+              ctx.beginPath();
+              ctx.arc(irisX + shiftX - eyeW*0.05, irisY + shiftY - eyeH*0.12,
+                Math.max(1.5, eyeW*0.03), 0, Math.PI*2);
+              ctx.fill();
+              ctx.restore();
+            }
           }
         } catch (e) {
           console.warn('Erro na renderização do Olhar AI:', e);
@@ -4486,15 +4784,14 @@ Regras:
       ctx.fillText(brandText, iconX + iconW + gap, badgeY + (badgeH / 2) + 1);
       ctx.restore();
 
-      // Envia frames para o FaceMesh em background usando o canvas offscreen com throttling inteligente (30 fps max)
+      // Envia frames para o FaceMesh em background com throttling inteligente (30 fps)
       const now = performance.now();
-      if (isEyeContactActive && faceMeshInstance && !isProcessingFaceMesh && (now - lastFaceDetectionTime >= 33) && rawCam && rawCam.readyState >= 2 && rawCam.videoWidth > 0) {
+      if (isEyeContactActive && faceMeshInstance && !isProcessingFaceMesh && (now - lastFaceMeshSentTime >= 33) && rawCam && rawCam.readyState >= 2 && rawCam.videoWidth > 0) {
+        lastFaceMeshSentTime = now;
         isProcessingFaceMesh = true;
         try {
           eyeDetectCtx.drawImage(rawCam, 0, 0, eyeDetectCanvas.width, eyeDetectCanvas.height);
-          faceMeshInstance.send({ image: eyeDetectCanvas }).then(() => {
-            isProcessingFaceMesh = false;
-          }).catch(() => {
+          faceMeshInstance.send({ image: eyeDetectCanvas }).catch(() => {
             isProcessingFaceMesh = false;
           });
         } catch (e) {
@@ -5204,6 +5501,12 @@ Regras:
         camBrightness,
         camContrast,
         camSaturation,
+        camStudioLight,
+        camSoftSkin,
+        camCatchlight,
+        camBlur,
+        camVignette,
+        currentLut,
         screenZoom,
         screenPanX,
         screenPanY,
@@ -5275,6 +5578,17 @@ Regras:
         if (d.camBrightness !== undefined && camBrightSlider) { camBrightness = d.camBrightness; camBrightSlider.value = d.camBrightness; if (camBrightVal) camBrightVal.innerText = d.camBrightness + '%'; }
         if (d.camContrast !== undefined && camContrastSlider) { camContrast = d.camContrast; camContrastSlider.value = d.camContrast; if (camContrastVal) camContrastVal.innerText = d.camContrast + '%'; }
         if (d.camSaturation !== undefined && camSatSlider) { camSaturation = d.camSaturation; camSatSlider.value = d.camSaturation; if (camSatVal) camSatVal.innerText = d.camSaturation + '%'; }
+        if (d.camStudioLight !== undefined && camStudioLightSlider) { camStudioLight = d.camStudioLight; camStudioLightSlider.value = d.camStudioLight; if (camStudioLightVal) camStudioLightVal.innerText = d.camStudioLight + '%'; }
+        if (d.camSoftSkin !== undefined && camSoftSkinSlider) { camSoftSkin = d.camSoftSkin; camSoftSkinSlider.value = d.camSoftSkin; if (camSoftSkinVal) camSoftSkinVal.innerText = d.camSoftSkin + '%'; }
+        if (d.camCatchlight !== undefined && camCatchlightSlider) { camCatchlight = d.camCatchlight; camCatchlightSlider.value = d.camCatchlight; if (camCatchlightVal) camCatchlightVal.innerText = d.camCatchlight + '%'; }
+        if (d.camBlur !== undefined && camBlurSlider) { camBlur = d.camBlur; camBlurSlider.value = d.camBlur; if (camBlurVal) camBlurVal.innerText = d.camBlur + 'px'; }
+        if (d.camVignette !== undefined && camVignetteSlider) { camVignette = d.camVignette; camVignetteSlider.value = d.camVignette; if (camVignetteVal) camVignetteVal.innerText = d.camVignette + '%'; }
+        if (d.currentLut) {
+          currentLut = d.currentLut;
+          document.querySelectorAll('#lutPresetMatrix .btn-lut-preset').forEach(b => {
+            b.classList.toggle('active', b.dataset.lut === currentLut);
+          });
+        }
         if (d.screenZoom !== undefined && screenZoomSlider) { screenZoom = d.screenZoom; screenZoomSlider.value = d.screenZoom; screenZoomVal.innerText = d.screenZoom.toFixed(2) + 'x'; }
         if (d.screenPanX !== undefined && screenPanXSlider) { screenPanX = d.screenPanX; screenPanXSlider.value = Math.round(d.screenPanX * 100); screenPanXVal.innerText = screenPanXSlider.value + '%'; }
         if (d.screenPanY !== undefined && screenPanYSlider) { screenPanY = d.screenPanY; screenPanYSlider.value = Math.round(d.screenPanY * 100); screenPanYVal.innerText = screenPanYSlider.value + '%'; }
@@ -5375,30 +5689,70 @@ Regras:
     }, { once: true });
 
     // ── SERVER SENT EVENTS (GLOBAL WINDOWS HOTKEYS F9 & F8) ──
+    let studioEventSource = null;
+    let lastGlobalTriggerTime = 0;
+
+    function showHotkeyToast(msg) {
+      const existing = document.getElementById('studioHotkeyToast');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.id = 'studioHotkeyToast';
+      toast.style.cssText = 'position:fixed;bottom:30px;right:30px;background:rgba(15,23,42,0.94);color:#fff;border:1px solid #ff4500;box-shadow:0 12px 36px rgba(0,0,0,0.6);padding:12px 22px;border-radius:14px;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;gap:12px;z-index:999999;backdrop-filter:blur(10px);pointer-events:none;transition:all 0.3s ease;';
+      toast.innerHTML = '<span style="font-size:20px;">⌨️</span><span>' + msg + '</span>';
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 350);
+      }, 2400);
+    }
+
     function connectSSE() {
+      if (studioEventSource) {
+        try { studioEventSource.close(); } catch(e) {}
+        studioEventSource = null;
+      }
+
       const sseUrl = window.location.port === '3399' ? '/events' : 'http://localhost:3399/events';
       try {
-        const es = new EventSource(sseUrl);
-        es.onmessage = (e) => {
+        studioEventSource = new EventSource(sseUrl);
+        studioEventSource.onmessage = (e) => {
           try {
             const data = JSON.parse(e.data);
+            const now = Date.now();
+            if (now - lastGlobalTriggerTime < 500) return; // Debounce anti-duplicação
+
             if (data.tipo === 'studio-toggle-rec') {
+              lastGlobalTriggerTime = now;
               if (!isCurrentlyRecording && !isSessionActive) {
+                showHotkeyToast('Atalho Global [F9]: Iniciando Gravação');
                 startTake();
               } else {
+                showHotkeyToast('Atalho Global [F9]: Finalizando e Exportando');
                 finishAndExportSession();
               }
             } else if (data.tipo === 'studio-toggle-pause') {
+              lastGlobalTriggerTime = now;
               if (isCurrentlyRecording) {
+                showHotkeyToast('Atalho Global [F8]: Pausando Trecho');
                 pauseTake();
               } else if (isSessionActive) {
+                showHotkeyToast('Atalho Global [F8]: Retomando Gravação');
+                startTake();
+              } else {
+                showHotkeyToast('Atalho Global [F8]: Iniciando Gravação');
                 startTake();
               }
             }
-          } catch (err) { }
+          } catch (err) {}
         };
-        es.onerror = () => {
-          setTimeout(connectSSE, 3000);
+        studioEventSource.onerror = () => {
+          if (studioEventSource) {
+            try { studioEventSource.close(); } catch(e) {}
+            studioEventSource = null;
+          }
+          setTimeout(connectSSE, 4000);
         };
       } catch (e) {
         console.log('SSE Offline:', e);
@@ -5406,36 +5760,56 @@ Regras:
     }
     connectSSE();
 
-    // ── KEYBOARD SHORTCUTS (NO NAVEGADOR & GLOBAIS) ──
-    window.addEventListener('keydown', (e) => {
+    // ── KEYBOARD SHORTCUTS (NO NAVEGADOR & GLOBAIS: F9 GRAVAR/PARAR • F8 PAUSAR) ──
+    function handleStudioKeyShortcuts(e) {
       const activeEl = document.activeElement;
       const tag = activeEl ? activeEl.tagName.toLowerCase() : '';
-      const isTyping = tag === 'input' || tag === 'textarea' || tag === 'select';
+      const isTyping = tag === 'input' || tag === 'textarea' || tag === 'select' || (activeEl && activeEl.isContentEditable);
 
       if (isTyping) {
         if (e.key === 'Escape' && activeEl) activeEl.blur();
         return;
       }
 
-      // F9, F10 ou R -> Iniciar Gravação ou Finalizar Vídeo
-      if (e.key === 'F9' || e.key === 'F10' || e.key === 'r' || e.key === 'R') {
+      const isF9 = e.key === 'F9' || e.code === 'F9' || e.keyCode === 120 || e.key === 'r' || e.key === 'R';
+      const isF8 = e.key === 'F8' || e.code === 'F8' || e.keyCode === 119 || e.code === 'Space' || e.key === ' ' || e.key === 'p' || e.key === 'P';
+
+      // [F9] -> Iniciar Gravação ou Finalizar e Exportar Vídeo
+      if (isF9) {
         e.preventDefault();
+        e.stopPropagation();
         if (activeEl && activeEl.tagName.toLowerCase() === 'button') activeEl.blur();
-        if (!isCurrentlyRecording && !isSessionActive) startTake();
-        else finishAndExportSession();
+        if (!isCurrentlyRecording && !isSessionActive) {
+          showHotkeyToast('⚡ [F9]: Iniciando Gravação');
+          startTake();
+        } else {
+          showHotkeyToast('⚡ [F9]: Finalizando e Exportando Vídeo');
+          finishAndExportSession();
+        }
         return;
       }
 
-      // F8 ou Espaço ou P -> Pausar Trecho / Retomar Próximo Trecho
-      if (e.key === 'F8' || e.code === 'Space' || e.key === ' ' || e.key === 'p' || e.key === 'P') {
+      // [F8] -> Pausar Trecho / Retomar Próximo Trecho
+      if (isF8) {
         e.preventDefault();
+        e.stopPropagation();
         if (activeEl && activeEl.tagName.toLowerCase() === 'button') activeEl.blur();
-        if (isCurrentlyRecording) pauseTake();
-        else if (isSessionActive) startTake();
-        else startTake();
+        if (isCurrentlyRecording) {
+          showHotkeyToast('⚡ [F8]: Pausando Trecho');
+          pauseTake();
+        } else if (isSessionActive) {
+          showHotkeyToast('⚡ [F8]: Retomando Gravação');
+          startTake();
+        } else {
+          showHotkeyToast('⚡ [F8]: Iniciando Gravação');
+          startTake();
+        }
         return;
       }
-    });
+    }
+
+    window.addEventListener('keydown', handleStudioKeyShortcuts, true);
+    document.addEventListener('keydown', handleStudioKeyShortcuts, true);
 
     // ── PREVIEW MODAL & AUTO-CORTE DE SILÊNCIO (JUMP CUT VIRAL) ──
     const modalPreview = document.getElementById('modalPreview');
@@ -5454,6 +5828,50 @@ Regras:
     let currentAutoCutBlob = null;
     let currentAutoCutUrl = null;
     let autoCutSensitivity = 'balanced';
+    let selectedVideoSpeed = 1.0;
+    const previewSpeedValBadge = document.getElementById('previewSpeedValBadge');
+    const multiVideoSessionBar = document.getElementById('multiVideoSessionBar');
+    const multiVideoSessionPills = document.getElementById('multiVideoSessionPills');
+
+    // Fila de múltiplos vídeos da sessão (Suporta gravar N vídeos em sequência em background)
+    let backgroundVideoQueue = [];
+    let activeQueueId = null;
+
+    // Aviso sonoro suave e elegante de término (sem interferir no microfone)
+    function playCompletionSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+
+        // Harmonia suave de dois tons (Mi e Lá)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, now);
+        osc1.frequency.exponentialRampToValueAtTime(1318.5, now + 0.12);
+        gain1.gain.setValueAtTime(0.04, now);
+        gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.36);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880, now + 0.08);
+        osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.22);
+        gain2.gain.setValueAtTime(0.04, now + 0.08);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.08);
+        osc2.stop(now + 0.46);
+      } catch (e) {
+        console.warn('Erro tocando som de conclusão:', e);
+      }
+    }
 
     // Seletor de intensidade de corte
     document.querySelectorAll('.btn-silence-pill').forEach(pill => {
@@ -5464,41 +5882,183 @@ Regras:
       });
     });
 
-    function showPreviewModal(url, takes = [], rawBlob = null) {
-      currentRawVideoUrl = url;
-      currentRawVideoBlob = rawBlob || (takes.length > 0 ? takes[0].blob : null);
-      currentAutoCutBlob = null;
-      currentAutoCutUrl = null;
+    // Seletor de Aceleração / Velocidade de Vídeo (1.0x, 1.15x, 1.25x, 1.5x, 2.0x)
+    document.querySelectorAll('.btn-speed-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.btn-speed-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        selectedVideoSpeed = parseFloat(pill.dataset.speed) || 1.0;
 
-      previewPlayer.src = url;
+        if (previewPlayer) {
+          previewPlayer.playbackRate = selectedVideoSpeed;
+          previewPlayer.preservesPitch = true;
+        }
 
-      const selected = allScripts.find(s => s.id === (scriptSelector ? scriptSelector.value : '1'));
-      const scriptName = selected ? selected.titulo.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Video';
-      const takesInfo = takes.length > 1 ? `_${takes.length}_Trechos` : '';
-      const filenameOriginal = `CsDigital_${scriptName}${takesInfo}_Original.webm`;
-      const filenameAutoCut = `CsDigital_${scriptName}${takesInfo}_AutoCut_Viral.webm`;
+        const activeItem = backgroundVideoQueue.find(v => v.id === activeQueueId);
+        if (activeItem) activeItem.speed = selectedVideoSpeed;
+
+        if (previewSpeedValBadge) {
+          if (selectedVideoSpeed === 1.0) previewSpeedValBadge.innerText = '1.0x (Normal)';
+          else if (selectedVideoSpeed === 1.15) previewSpeedValBadge.innerText = '1.15x (Suave)';
+          else if (selectedVideoSpeed === 1.25) previewSpeedValBadge.innerText = '1.25x (Dinâmico)';
+          else if (selectedVideoSpeed === 1.5) previewSpeedValBadge.innerText = '1.5x (Rápido)';
+          else if (selectedVideoSpeed === 2.0) previewSpeedValBadge.innerText = '2.0x (Ultra Rápido)';
+          else previewSpeedValBadge.innerText = `${selectedVideoSpeed}x`;
+        }
+      });
+    });
+
+    function renderMultiVideoSessionBar() {
+      if (!multiVideoSessionBar || !multiVideoSessionPills) return;
+      if (backgroundVideoQueue.length > 1) {
+        multiVideoSessionBar.style.display = 'flex';
+        multiVideoSessionPills.innerHTML = backgroundVideoQueue.map((item, idx) => {
+          const isActive = item.id === activeQueueId;
+          const statusIcon = item.status === 'done' ? '✅' : (item.status === 'processing' ? '⏳' : '🎬');
+          const statusLabel = item.status === 'done' ? 'Pronto' : (item.status === 'processing' ? 'Cortando...' : 'Gravado');
+          return `
+            <button type="button" class="tab-btn" onclick="window.switchActiveQueueVideo('${item.id}')"
+              style="background: ${isActive ? 'linear-gradient(135deg, rgba(249,115,22,0.35), rgba(234,88,12,0.25))' : 'rgba(255,255,255,0.06)'}; border: 1.5px solid ${isActive ? '#f97316' : 'rgba(255,255,255,0.12)'}; color: #fff; padding: 6px 14px; font-size: 11.5px; font-weight: ${isActive ? '800' : '600'}; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; flex-shrink: 0; box-shadow: ${isActive ? '0 0 14px rgba(249,115,22,0.35)' : 'none'}; min-height: 34px;">
+              <span style="font-size: 13px;">${statusIcon}</span>
+              <span style="font-size: 11.5px; font-weight: 800;">Vídeo ${idx + 1}</span>
+              <span style="font-size: 10.5px; opacity: 0.85; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.title}</span>
+              <span style="font-size: 9.5px; font-weight: 800; background: ${item.status === 'done' ? 'rgba(16,185,129,0.3)' : (item.status === 'processing' ? 'rgba(249,115,22,0.3)' : 'rgba(255,255,255,0.12)')}; color: ${item.status === 'done' ? '#34d399' : (item.status === 'processing' ? '#fb923c' : '#94a3b8')}; padding: 2px 7px; border-radius: 6px;">${statusLabel}</span>
+            </button>
+          `;
+        }).join('');
+      } else {
+        multiVideoSessionBar.style.display = 'none';
+      }
+    }
+
+    window.switchActiveQueueVideo = function(id) {
+      const item = backgroundVideoQueue.find(v => v.id === id);
+      if (!item) return;
+      activeQueueId = id;
+      currentRawVideoBlob = item.rawBlob;
+      currentRawVideoUrl = item.url;
+      currentAutoCutBlob = item.autoCutBlob;
+      currentAutoCutUrl = item.autoCutUrl;
+      selectedVideoSpeed = item.speed || 1.0;
+
+      previewPlayer.src = currentAutoCutUrl || currentRawVideoUrl;
+      previewPlayer.playbackRate = currentAutoCutUrl ? 1.0 : selectedVideoSpeed;
+      previewPlayer.preservesPitch = true;
+
+      document.querySelectorAll('.btn-speed-pill').forEach(p => {
+        p.classList.toggle('active', parseFloat(p.dataset.speed) === selectedVideoSpeed);
+      });
+      if (previewSpeedValBadge) {
+        if (selectedVideoSpeed === 1.0) previewSpeedValBadge.innerText = '1.0x (Normal)';
+        else if (selectedVideoSpeed === 1.15) previewSpeedValBadge.innerText = '1.15x (Suave)';
+        else if (selectedVideoSpeed === 1.25) previewSpeedValBadge.innerText = '1.25x (Dinâmico)';
+        else if (selectedVideoSpeed === 1.5) previewSpeedValBadge.innerText = '1.5x (Rápido)';
+        else if (selectedVideoSpeed === 2.0) previewSpeedValBadge.innerText = '2.0x (Ultra Rápido)';
+        else previewSpeedValBadge.innerText = `${selectedVideoSpeed}x`;
+      }
+
+      const filenameOriginal = `CsDigital_${item.title}_Original.webm`;
+      const speedTag = item.speed && item.speed !== 1.0 ? `_${item.speed}x` : '';
+      const filenameAutoCut = `CsDigital_${item.title}_AutoCut${speedTag}_Viral.webm`;
 
       if (downloadOriginalBtn) {
-        downloadOriginalBtn.href = url;
+        downloadOriginalBtn.href = currentRawVideoUrl;
         downloadOriginalBtn.download = filenameOriginal;
       }
-
       if (downloadVideoBtn) {
-        downloadVideoBtn.href = url;
-        downloadVideoBtn.download = filenameOriginal;
-        downloadVideoBtn.innerHTML = '⚡ Baixar WebM HD';
+        downloadVideoBtn.href = currentAutoCutUrl || currentRawVideoUrl;
+        downloadVideoBtn.download = currentAutoCutUrl ? filenameAutoCut : filenameOriginal;
+        downloadVideoBtn.innerHTML = currentAutoCutUrl ? '⚡ Baixar WebM com Auto-Corte' : '⚡ Baixar WebM HD';
       }
 
-      // Reset estado visual do card de silêncio
-      if (silenceProgressTrack) silenceProgressTrack.style.display = 'none';
-      if (silenceProgressBar) silenceProgressBar.style.width = '0%';
-      if (silenceStatusText) silenceStatusText.style.display = 'none';
-      if (silenceResultBox) silenceResultBox.style.display = 'none';
-      if (btnProcessAutoCut) {
-        btnProcessAutoCut.disabled = false;
-        btnProcessAutoCut.innerHTML = '⚡ Processar e Criar Vídeo com Auto-Corte';
+      // Sincroniza estado visual do card de silêncio para ESTE vídeo específico
+      if (item.status === 'processing') {
+        if (silenceProgressTrack) silenceProgressTrack.style.display = 'block';
+        if (silenceProgressBar) {
+          silenceProgressBar.style.width = '65%';
+          silenceProgressBar.style.background = 'linear-gradient(90deg, #f97316, #eab308)';
+        }
+        if (silenceStatusText) {
+          silenceStatusText.style.display = 'block';
+          silenceStatusText.innerText = '⏳ Processando cortes em segundo plano com IA...';
+        }
+        if (silenceResultBox) silenceResultBox.style.display = 'none';
+        if (btnProcessAutoCut) {
+          btnProcessAutoCut.disabled = true;
+          btnProcessAutoCut.innerHTML = '⏳ Processando Cortes em Segundo Plano...';
+        }
+      } else if (item.status === 'done') {
+        if (silenceProgressTrack) silenceProgressTrack.style.display = 'block';
+        if (silenceProgressBar) {
+          silenceProgressBar.style.width = '100%';
+          silenceProgressBar.style.background = '#10b981';
+        }
+        if (silenceStatusText) {
+          silenceStatusText.style.display = 'block';
+          silenceStatusText.innerText = '✅ Auto-Corte finalizado com sucesso!';
+        }
+        if (silenceResultBox) {
+          silenceSavedTimeLabel.innerText = `${(item.savedSec || 0).toFixed(1)}s de pausas eliminados com sucesso!`;
+          silenceResultBox.style.display = 'block';
+        }
+        if (btnProcessAutoCut) {
+          btnProcessAutoCut.disabled = false;
+          btnProcessAutoCut.innerHTML = '✓ Auto-Corte Pronto (Clique p/ Reprocessar)';
+        }
+      } else {
+        if (silenceProgressTrack) silenceProgressTrack.style.display = 'none';
+        if (silenceProgressBar) silenceProgressBar.style.width = '0%';
+        if (silenceStatusText) silenceStatusText.style.display = 'none';
+        if (silenceResultBox) silenceResultBox.style.display = 'none';
+        if (btnProcessAutoCut) {
+          btnProcessAutoCut.disabled = false;
+          btnProcessAutoCut.innerHTML = '⚡ Processar e Criar Vídeo com Auto-Corte';
+        }
       }
 
+      // Sincroniza botão MP4 para ESTE vídeo
+      const btnDownloadMp4 = document.getElementById('btnDownloadMp4');
+      if (btnDownloadMp4) {
+        if (item.mp4Status === 'converting') {
+          btnDownloadMp4.disabled = true;
+          btnDownloadMp4.innerHTML = '⏳ Convertendo p/ MP4 (FFmpeg)...';
+        } else if (item.mp4Status === 'done' && item.mp4Url) {
+          btnDownloadMp4.disabled = false;
+          btnDownloadMp4.innerHTML = '📥 Baixar MP4 (Pronto!)';
+        } else {
+          btnDownloadMp4.disabled = false;
+          btnDownloadMp4.innerHTML = '🎥 Baixar em MP4 (H.264)';
+        }
+      }
+
+      renderMultiVideoSessionBar();
+    };
+
+    function showPreviewModal(url, takes = [], rawBlob = null) {
+      const selected = allScripts.find(s => s.id === (scriptSelector ? scriptSelector.value : '1'));
+      const scriptName = selected ? selected.titulo.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Video_' + (backgroundVideoQueue.length + 1);
+
+      const vidId = 'vid_' + Date.now();
+      const newQueueItem = {
+        id: vidId,
+        title: scriptName,
+        url: url,
+        rawBlob: rawBlob || (takes.length > 0 ? takes[0].blob : null),
+        autoCutBlob: null,
+        autoCutUrl: null,
+        status: 'raw',
+        mp4Blob: null,
+        mp4Url: null,
+        mp4Status: 'idle',
+        speed: 1.0,
+        savedSec: 0,
+        takesCount: takes.length
+      };
+
+      backgroundVideoQueue.push(newQueueItem);
+      activeQueueId = vidId;
+
+      window.switchActiveQueueVideo(vidId);
       modalPreview.classList.add('active');
     }
 
@@ -5520,17 +6080,31 @@ Regras:
       });
     }
 
-    // ── BOTÃO DE CONVERSÃO & DOWNLOAD EM MP4 (H.264 / AAC) ──
+    // ── BOTÃO BAIXAR EM MP4 FULL HD COM CONVERSÃO EM SEGUNDO PLANO POR VÍDEO ──
     const btnDownloadMp4 = document.getElementById('btnDownloadMp4');
     if (btnDownloadMp4) {
       btnDownloadMp4.addEventListener('click', async () => {
-        const targetBlob = currentAutoCutBlob || currentRawVideoBlob;
-        if (!targetBlob) {
-          alert('Vídeo não encontrado para conversão.');
+        const activeItem = backgroundVideoQueue.find(v => v.id === activeQueueId);
+        if (!activeItem) return;
+
+        // Se já foi convertido, baixa direto instantaneamente!
+        if (activeItem.mp4Status === 'done' && activeItem.mp4Url) {
+          const a = document.createElement('a');
+          a.href = activeItem.mp4Url;
+          a.download = `CsDigital_${activeItem.title}_AutoCut.mp4`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
           return;
         }
 
-        const originalHtml = btnDownloadMp4.innerHTML;
+        const targetBlob = activeItem.autoCutBlob || activeItem.rawBlob;
+        if (!targetBlob) {
+          alert('Nenhum vídeo disponível para conversão.');
+          return;
+        }
+
+        activeItem.mp4Status = 'converting';
         btnDownloadMp4.disabled = true;
         btnDownloadMp4.innerHTML = '⏳ Convertendo p/ MP4 (FFmpeg)...';
 
@@ -5541,21 +6115,21 @@ Regras:
           const res = await fetch(serverUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ videoBase64: base64 })
+            body: JSON.stringify({
+              videoBase64: base64,
+              speed: activeItem.speed || 1.0
+            })
           });
 
-          if (!res.ok) {
-            throw new Error(`Servidor respondeu com código ${res.status}`);
-          }
+          if (!res.ok) throw new Error(`Servidor código ${res.status}`);
 
           const mp4Blob = await res.blob();
           const mp4Url = URL.createObjectURL(mp4Blob);
+          activeItem.mp4Blob = mp4Blob;
+          activeItem.mp4Url = mp4Url;
+          activeItem.mp4Status = 'done';
 
-          const selected = allScripts.find(s => s.id === (scriptSelector ? scriptSelector.value : '1'));
-          const scriptName = selected ? selected.titulo.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Video';
-          const autoCutTag = currentAutoCutBlob ? '_AutoCut_Viral' : '';
-          const filenameMp4 = `CsDigital_${scriptName}${autoCutTag}.mp4`;
-
+          const filenameMp4 = `CsDigital_${activeItem.title}_AutoCut.mp4`;
           const a = document.createElement('a');
           a.href = mp4Url;
           a.download = filenameMp4;
@@ -5563,65 +6137,78 @@ Regras:
           a.click();
           document.body.removeChild(a);
 
-          btnDownloadMp4.innerHTML = '✓ MP4 Baixado!';
-          setTimeout(() => {
+          if (activeQueueId === activeItem.id) {
             btnDownloadMp4.disabled = false;
-            btnDownloadMp4.innerHTML = originalHtml;
-          }, 3000);
-        } catch (err) {
-          console.warn('Falha na conversão para MP4 via servidor:', err);
-          alert('Servidor Node.js local não detectado para conversão MP4. O download será realizado no formato WebM HD de alta qualidade.');
-          if (downloadVideoBtn) {
-            downloadVideoBtn.click();
+            btnDownloadMp4.innerHTML = '✓ MP4 Baixado!';
+            setTimeout(() => {
+              if (activeQueueId === activeItem.id) btnDownloadMp4.innerHTML = '📥 Baixar MP4 (Pronto)';
+            }, 2500);
           }
-          btnDownloadMp4.disabled = false;
-          btnDownloadMp4.innerHTML = originalHtml;
+          showHotkeyToast(`🎬 MP4 de "${activeItem.title}" pronto e baixado!`);
+        } catch (err) {
+          console.warn('Falha na conversão para MP4:', err);
+          activeItem.mp4Status = 'idle';
+          if (activeQueueId === activeItem.id) {
+            btnDownloadMp4.disabled = false;
+            btnDownloadMp4.innerHTML = '🎥 Baixar em MP4 (H.264)';
+          }
+          alert('Conversão para MP4 indisponível no momento. Baixe o WebM HD diretamente.');
         }
       });
     }
 
-    // ── ALGORITMO DE AUTO-CORTE DE SILÊNCIO & JUMP CUT (FFMPEG OU CANVAS + ÁUDIO RECONSTRUÍDO) ──
+    // ── ALGORITMO DE AUTO-CORTE DE SILÊNCIO & JUMP CUT (CONCORRENTE POR VÍDEO) ──
     if (btnProcessAutoCut) {
       btnProcessAutoCut.addEventListener('click', async () => {
-        if (!currentRawVideoBlob) {
+        const targetItem = backgroundVideoQueue.find(v => v.id === activeQueueId);
+        if (!targetItem || !targetItem.rawBlob) {
           alert('Vídeo original não encontrado para processar.');
           return;
         }
 
-        btnProcessAutoCut.disabled = true;
-        silenceProgressTrack.style.display = 'block';
-        silenceStatusText.style.display = 'block';
-        silenceResultBox.style.display = 'none';
+        targetItem.status = 'processing';
+        renderMultiVideoSessionBar();
+        updateBackgroundStateUI();
+
+        if (activeQueueId === targetItem.id) {
+          btnProcessAutoCut.disabled = true;
+          btnProcessAutoCut.innerHTML = '⏳ Cortando pausas com IA...';
+          silenceProgressTrack.style.display = 'block';
+          silenceProgressBar.style.width = '35%';
+          silenceProgressBar.style.background = 'linear-gradient(90deg, #f97316, #eab308)';
+          silenceStatusText.style.display = 'block';
+          silenceStatusText.innerText = '📊 Analisando frequências de áudio...';
+          silenceResultBox.style.display = 'none';
+        }
 
         try {
-          silenceStatusText.innerText = '📊 Analisando frequências de áudio...';
-          silenceProgressBar.style.width = '20%';
-
           const AudioContextClass = window.AudioContext || window.webkitAudioContext;
           const audioCtx = new AudioContextClass();
-          const arrayBuffer = await currentRawVideoBlob.arrayBuffer();
+          const arrayBuffer = await targetItem.rawBlob.arrayBuffer();
           const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
 
-          silenceProgressBar.style.width = '40%';
-          silenceStatusText.innerText = '✂️ Detectando momentos de fala e pausas...';
+          if (activeQueueId === targetItem.id) {
+            silenceProgressBar.style.width = '60%';
+            silenceStatusText.innerText = '✂️ Detectando fala e eliminando silêncios...';
+          }
 
           const channelData = audioBuffer.getChannelData(0);
           const sampleRate = audioBuffer.sampleRate;
-          const windowSize = Math.floor(sampleRate * 0.02); // 20ms por janela
+          const windowSize = Math.floor(sampleRate * 0.02);
           const windowsCount = Math.floor(channelData.length / windowSize);
 
-          let threshold = 0.012; // -38dB
-          let minSilenceWindows = Math.floor(0.28 / 0.02); // 280ms
-          let padWindows = 3; // ~60ms padding
+          let threshold = 0.012;
+          let minSilenceWindows = Math.floor(0.28 / 0.02);
+          let padWindows = 3;
 
           if (autoCutSensitivity === 'aggressive') {
-            threshold = 0.018; // -35dB
-            minSilenceWindows = Math.floor(0.18 / 0.02); // 180ms
-            padWindows = 2; // ~40ms
+            threshold = 0.018;
+            minSilenceWindows = Math.floor(0.18 / 0.02);
+            padWindows = 2;
           } else if (autoCutSensitivity === 'smooth') {
-            threshold = 0.007; // -43dB
-            minSilenceWindows = Math.floor(0.45 / 0.02); // 450ms
-            padWindows = 4; // ~80ms
+            threshold = 0.007;
+            minSilenceWindows = Math.floor(0.45 / 0.02);
+            padWindows = 4;
           }
 
           const isSpeech = new Uint8Array(windowsCount);
@@ -5636,7 +6223,6 @@ Regras:
             if (rms >= threshold) isSpeech[i] = 1;
           }
 
-          // Agrupa segmentos de fala contínua
           let rawIntervals = [];
           let inSpeech = false;
           let startWin = 0;
@@ -5663,66 +6249,65 @@ Regras:
           if (inSpeech) {
             rawIntervals.push({ startSec: (startWin * windowSize) / sampleRate, endSec: audioBuffer.duration });
           }
-
           if (rawIntervals.length === 0) {
             rawIntervals = [{ startSec: 0, endSec: audioBuffer.duration }];
           }
 
-          // Calcula economia de tempo
           const totalSpeechSec = rawIntervals.reduce((acc, cur) => acc + (cur.endSec - cur.startSec), 0);
           const savedTime = Math.max(0, audioBuffer.duration - totalSpeechSec);
 
-          silenceProgressBar.style.width = '60%';
-          silenceStatusText.innerText = `🎬 Processando cortes com áudio perfeitamente alinhado...`;
+          if (activeQueueId === targetItem.id) {
+            silenceProgressBar.style.width = '80%';
+            silenceStatusText.innerText = '🎬 Renderizando vídeo acelerado e sem pausas...';
+          }
 
-          // 1. Tenta processar via FFmpeg no Servidor Node.js (Precisão absoluta)
+          // 1. Tenta FFmpeg no Servidor (Single-Pass Ultra Rápido)
           let serverSuccess = false;
           try {
             const serverUrl = window.location.port === '3399' ? '/api/studio/process-silence-cut' : 'http://localhost:3399/api/studio/process-silence-cut';
-            const base64 = await blobToBase64(currentRawVideoBlob);
+            const base64 = await blobToBase64(targetItem.rawBlob);
             const segments = rawIntervals.map(r => ({ start: r.startSec, end: r.endSec }));
 
             const response = await fetch(serverUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ videoBase64: base64, segments })
+              body: JSON.stringify({
+                videoBase64: base64,
+                segments,
+                speed: targetItem.speed || selectedVideoSpeed || 1.0
+              })
             });
 
             if (response.ok) {
-              currentAutoCutBlob = await response.blob();
-              currentAutoCutUrl = URL.createObjectURL(currentAutoCutBlob);
+              const resBlob = await response.blob();
+              targetItem.autoCutBlob = resBlob;
+              targetItem.autoCutUrl = URL.createObjectURL(resBlob);
+              targetItem.status = 'done';
+              targetItem.savedSec = savedTime;
               serverSuccess = true;
             }
           } catch (e) {
-            console.log('Servidor offline ou sem FFmpeg, utilizando mixer de áudio local no Canvas:', e);
+            console.log('Tentando fallback local de áudio:', e);
           }
 
-          // 2. Fallback de alta fidelidade no navegador com mixer de áudio
+          // 2. Fallback de render local no Canvas se servidor offline
           if (!serverSuccess) {
-            silenceProgressBar.style.width = '75%';
-            silenceStatusText.innerText = `🎬 Renderizando áudio e vídeo sem pausas (${savedTime.toFixed(1)}s economizados)...`;
-
             const offVideo = document.createElement('video');
-            offVideo.src = currentRawVideoUrl;
+            offVideo.src = targetItem.url;
             offVideo.muted = true;
             offVideo.playsInline = true;
-
-            await new Promise((res) => {
-              offVideo.onloadedmetadata = () => res();
-            });
+            await new Promise(r => { offVideo.onloadedmetadata = () => r(); });
 
             const offCanvas = document.createElement('canvas');
             offCanvas.width = offVideo.videoWidth || 1080;
             offCanvas.height = offVideo.videoHeight || 1920;
             const offCtx = offCanvas.getContext('2d', { alpha: false });
 
-            // Reconstrução do buffer de áudio concatenado
             const clientAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const audioDest = clientAudioCtx.createMediaStreamDestination();
-            
             const totalSamples = rawIntervals.reduce((acc, cur) => acc + Math.floor((cur.endSec - cur.startSec) * sampleRate), 0);
             const mergedAudioBuffer = clientAudioCtx.createBuffer(audioBuffer.numberOfChannels, totalSamples, sampleRate);
-            
+
             for (let ch = 0; ch < audioBuffer.numberOfChannels; ch++) {
               const srcData = audioBuffer.getChannelData(ch);
               const destData = mergedAudioBuffer.getChannelData(ch);
@@ -5742,35 +6327,23 @@ Regras:
 
             const cutStream = offCanvas.captureStream(60);
             const mixedAudioTrack = audioDest.stream.getAudioTracks()[0];
-            if (mixedAudioTrack) {
-              cutStream.addTrack(mixedAudioTrack);
-            }
+            if (mixedAudioTrack) cutStream.addTrack(mixedAudioTrack);
 
             const cutChunks = [];
-            let cutBitrate = 14_000_000;
-            let cutOptions = { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: cutBitrate };
-            if (!MediaRecorder.isTypeSupported(cutOptions.mimeType)) {
-              cutOptions = { mimeType: 'video/webm', videoBitsPerSecond: cutBitrate };
-            }
-            const cutRecorder = new MediaRecorder(cutStream, cutOptions);
-            cutRecorder.ondataavailable = (e) => {
-              if (e.data && e.data.size > 0) cutChunks.push(e.data);
-            };
-
+            const cutRecorder = new MediaRecorder(cutStream, { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: 14000000 });
+            cutRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) cutChunks.push(e.data); };
             cutRecorder.start(100);
             audioSource.start(0);
 
             for (let seg of rawIntervals) {
               offVideo.currentTime = seg.startSec;
-              await new Promise((r) => { offVideo.onseeked = () => r(); });
+              await new Promise(r => { offVideo.onseeked = () => r(); });
               try { await offVideo.play(); } catch(e) {}
-
               const durationSeg = seg.endSec - seg.startSec;
               const startTime = Date.now();
-
               while ((Date.now() - startTime) < (durationSeg * 1000) && !offVideo.paused && !offVideo.ended) {
                 offCtx.drawImage(offVideo, 0, 0, offCanvas.width, offCanvas.height);
-                await new Promise((r) => requestAnimationFrame(r));
+                await new Promise(r => requestAnimationFrame(r));
               }
               offVideo.pause();
             }
@@ -5785,9 +6358,13 @@ Regras:
           silenceProgressBar.style.width = '100%';
           silenceStatusText.innerText = '✅ Auto-Corte finalizado com sucesso!';
 
-          // Atualiza player de prévia e botão de download
+          // Atualiza player de prévia com o novo vídeo (mantém pausado para NÃO atrapalhar gravações em andamento)
           previewPlayer.src = currentAutoCutUrl;
-          previewPlayer.play();
+          previewPlayer.pause();
+          previewPlayer.currentTime = 0;
+
+          // Emite um aviso sonoro bem suave e discreto de conclusão
+          playCompletionSound();
 
           const selected = allScripts.find(s => s.id === (scriptSelector ? scriptSelector.value : '1'));
           const scriptName = selected ? selected.titulo.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Video';
@@ -5800,14 +6377,182 @@ Regras:
           silenceSavedTimeLabel.innerText = `${savedTime.toFixed(1)}s de pausas e silêncios eliminados! Duração final: ${totalSpeechSec.toFixed(1)}s`;
           silenceResultBox.style.display = 'block';
           btnProcessAutoCut.innerHTML = '✓ Auto-Corte Aplicado (Pronto para Baixar)';
+
+          // Atualiza item na fila de múltiplos vídeos
+          const activeItem = backgroundVideoQueue.find(v => v.id === activeQueueId);
+          if (activeItem) {
+            activeItem.status = 'done';
+            activeItem.autoCutBlob = currentAutoCutBlob;
+            activeItem.autoCutUrl = currentAutoCutUrl;
+            activeItem.savedSec = savedTime;
+          }
+          renderMultiVideoSessionBar();
+
+          // Atualiza estado de segundo plano
+          updateBackgroundStateUI('done', savedTime);
+          showHotkeyToast('🎉 Auto-Corte do vídeo finalizado! Pronto para baixar.');
         } catch (err) {
           console.error('Erro ao processar Auto-Corte:', err);
           silenceStatusText.innerText = 'Erro ao processar áudio. Baixe a versão original normalmente.';
           btnProcessAutoCut.disabled = false;
+          const activeItem = backgroundVideoQueue.find(v => v.id === activeQueueId);
+          if (activeItem) activeItem.status = 'raw';
+          renderMultiVideoSessionBar();
+          if (studioFloatingTaskWidget) {
+            floatingTaskTitle.innerText = 'Erro no processamento';
+            floatingTaskSubtitle.innerText = 'Baixe o vídeo original no estúdio';
+          }
         }
       });
     }
+
+    // ── GERENCIADOR DE SEGUNDO PLANO (MINIMIZAR & GRAVAR MÚLTIPLOS VÍDEOS) ──
+    const btnMinimizePreview = document.getElementById('btnMinimizePreview');
+    const btnHeaderBackgroundVideo = document.getElementById('btnHeaderBackgroundVideo');
+    const headerBgIcon = document.getElementById('headerBgIcon');
+    const headerBgText = document.getElementById('headerBgText');
+    const studioFloatingTaskWidget = document.getElementById('studioFloatingTaskWidget');
+    const floatingTaskIcon = document.getElementById('floatingTaskIcon');
+    const floatingTaskTitle = document.getElementById('floatingTaskTitle');
+    const floatingTaskSubtitle = document.getElementById('floatingTaskSubtitle');
+    const floatingTaskProgressBar = document.getElementById('floatingTaskProgressBar');
+    const btnRestorePreviewModal = document.getElementById('btnRestorePreviewModal');
+    const btnDismissFloatingWidget = document.getElementById('btnDismissFloatingWidget');
+
+    function updateBackgroundStateUI(state = 'ready', savedSec = 0) {
+      const totalCount = backgroundVideoQueue.length;
+      const processingCount = backgroundVideoQueue.filter(v => v.status === 'processing').length;
+      const doneCount = backgroundVideoQueue.filter(v => v.status === 'done').length;
+
+      if (totalCount === 0) {
+        if (btnHeaderBackgroundVideo) btnHeaderBackgroundVideo.style.display = 'none';
+        if (studioFloatingTaskWidget) studioFloatingTaskWidget.style.display = 'none';
+        return;
+      }
+
+      if (btnHeaderBackgroundVideo) {
+        btnHeaderBackgroundVideo.style.display = 'flex';
+      }
+      if (studioFloatingTaskWidget) {
+        studioFloatingTaskWidget.style.display = 'block';
+      }
+
+      if (processingCount > 0 || state === 'processing') {
+        if (headerBgIcon) headerBgIcon.innerText = '⏳';
+        if (headerBgText) headerBgText.innerText = totalCount > 1 ? `${totalCount} Vídeos (${processingCount} cortando...)` : 'Processando Auto-Corte...';
+        if (btnHeaderBackgroundVideo) {
+          btnHeaderBackgroundVideo.style.borderColor = '#f97316';
+          btnHeaderBackgroundVideo.style.boxShadow = '0 0 16px rgba(249,115,22,0.45)';
+        }
+        if (floatingTaskIcon) floatingTaskIcon.innerText = '⏳';
+        if (floatingTaskTitle) floatingTaskTitle.innerText = totalCount > 1 ? `${totalCount} Vídeos na Fila (${processingCount} cortando)` : 'Processando Auto-Corte...';
+        if (floatingTaskSubtitle) floatingTaskSubtitle.innerText = 'Estúdio liberado para você gravar outro vídeo!';
+        if (studioFloatingTaskWidget) studioFloatingTaskWidget.style.borderColor = '#f97316';
+      } else if (doneCount > 0 || state === 'done') {
+        if (headerBgIcon) headerBgIcon.innerText = '🎉';
+        if (headerBgText) headerBgText.innerText = totalCount > 1 ? `${totalCount} Vídeos Prontos` : 'Vídeo com Auto-Corte Pronto!';
+        if (btnHeaderBackgroundVideo) {
+          btnHeaderBackgroundVideo.style.borderColor = '#10b981';
+          btnHeaderBackgroundVideo.style.boxShadow = '0 0 18px rgba(16,185,129,0.5)';
+        }
+        if (floatingTaskIcon) floatingTaskIcon.innerText = '🎉';
+        if (floatingTaskTitle) floatingTaskTitle.innerText = totalCount > 1 ? `${totalCount} Vídeos Prontos na Sessão!` : 'Auto-Corte Finalizado com Sucesso!';
+        if (floatingTaskSubtitle) floatingTaskSubtitle.innerText = totalCount > 1 ? 'Clique para alternar entre os vídeos e baixar.' : `${savedSec > 0 ? savedSec.toFixed(1) + 's eliminados. ' : ''}Clique para abrir & baixar.`;
+        if (floatingTaskProgressBar) floatingTaskProgressBar.style.width = '100%';
+        if (studioFloatingTaskWidget) {
+          studioFloatingTaskWidget.style.borderColor = '#10b981';
+          studioFloatingTaskWidget.style.boxShadow = '0 16px 40px rgba(0,0,0,0.8), 0 0 25px rgba(16, 185, 129, 0.35)';
+        }
+      } else {
+        if (headerBgIcon) headerBgIcon.innerText = '🎬';
+        if (headerBgText) headerBgText.innerText = totalCount > 1 ? `${totalCount} Vídeos Gravados` : 'Vídeo Gravado (Abrir)';
+        if (btnHeaderBackgroundVideo) {
+          btnHeaderBackgroundVideo.style.borderColor = '#38bdf8';
+          btnHeaderBackgroundVideo.style.boxShadow = '0 0 16px rgba(56,189,248,0.4)';
+        }
+        if (floatingTaskIcon) floatingTaskIcon.innerText = '🎬';
+        if (floatingTaskTitle) floatingTaskTitle.innerText = totalCount > 1 ? `${totalCount} Vídeos Gravados na Sessão` : 'Vídeo Gravado Pronto!';
+        if (floatingTaskSubtitle) floatingTaskSubtitle.innerText = 'Clique para aplicar auto-corte ou baixar';
+        if (floatingTaskProgressBar) floatingTaskProgressBar.style.width = '100%';
+        if (studioFloatingTaskWidget) studioFloatingTaskWidget.style.borderColor = '#38bdf8';
+      }
+    }
+
+    function minimizePreviewModal() {
+      modalPreview.classList.remove('active');
+      previewPlayer.pause();
+
+      updateBackgroundStateUI();
+
+      // Libera o estúdio para gravar um novo vídeo imediatamente!
+      if (!isCurrentlyRecording) {
+        recordedTakes = [];
+        isSessionActive = false;
+        isCurrentlyRecording = false;
+        currentTakeNumber = 1;
+        updateRecordingStatusUI();
+      }
+      showHotkeyToast('🎬 Estúdio liberado! Você já pode gravar outro vídeo.');
+    }
+
+    function restorePreviewModal() {
+      modalPreview.classList.add('active');
+      renderMultiVideoSessionBar();
+      if (btnHeaderBackgroundVideo) btnHeaderBackgroundVideo.style.display = 'none';
+      if (studioFloatingTaskWidget) studioFloatingTaskWidget.style.display = 'none';
+    }
+
+    if (btnMinimizePreview) btnMinimizePreview.addEventListener('click', minimizePreviewModal);
+    if (btnHeaderBackgroundVideo) btnHeaderBackgroundVideo.addEventListener('click', restorePreviewModal);
+    if (btnRestorePreviewModal) btnRestorePreviewModal.addEventListener('click', restorePreviewModal);
+    if (btnDismissFloatingWidget) {
+      btnDismissFloatingWidget.addEventListener('click', () => {
+        if (studioFloatingTaskWidget) studioFloatingTaskWidget.style.display = 'none';
+      });
+    }
   </script>
+
+  <!-- FLOATING BACKGROUND TASK WIDGET (Processamento em Segundo Plano) -->
+  <div id="studioFloatingTaskWidget" style="display: none; position: fixed; bottom: 20px; right: 24px; z-index: 100000; background: #0f172a; border: 2px solid #f97316; border-radius: 12px; padding: 14px 18px; box-shadow: 0 16px 40px rgba(0,0,0,0.8), 0 0 25px rgba(249,115,22,0.35); max-width: 380px; min-width: 310px; transition: all 0.3s ease;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span id="floatingTaskIcon" style="font-size: 20px;">⏳</span>
+        <div>
+          <div id="floatingTaskTitle" style="font-size: 12.5px; font-weight: 800; color: #ffffff;">Processando Auto-Corte...</div>
+          <div id="floatingTaskSubtitle" style="font-size: 10.5px; color: var(--text-muted);">Estúdio liberado para nova gravação</div>
+        </div>
+      </div>
+      <button type="button" id="btnDismissFloatingWidget" style="background: none; border: none; color: var(--text-dim); font-size: 15px; cursor: pointer; padding: 2px;" title="Dispensar aviso">✕</button>
+    </div>
+    <div style="height: 5px; width: 100%; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 10px;">
+      <div id="floatingTaskProgressBar" style="height: 100%; width: 35%; background: linear-gradient(90deg, #f97316, #10b981); transition: width 0.3s ease;"></div>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" id="btnRestorePreviewModal" class="tab-btn" style="background: linear-gradient(135deg, #f97316, #ea580c); color: #ffffff; font-weight: 800; padding: 6px 14px; font-size: 11.5px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+        <span>Restaurar & Baixar</span>
+      </button>
+    </div>
+  <!-- MODAL / ALERT: Áudio da Tela Não Compartilhado -->
+  <div id="screenAudioMissingAlert" style="display: none; position: fixed; top: 75px; left: 50%; transform: translateX(-50%); z-index: 100001; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 2px solid #f59e0b; border-radius: 12px; padding: 14px 20px; box-shadow: 0 16px 40px rgba(0,0,0,0.8), 0 0 25px rgba(245, 158, 11, 0.35); max-width: 460px; width: 90%;">
+    <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+      <span style="font-size: 26px; line-height: 1;">⚠️</span>
+      <div>
+        <div style="font-size: 13.5px; font-weight: 800; color: #fbbf24; margin-bottom: 4px;">Tela Compartilhada SEM ÁUDIO!</div>
+        <div style="font-size: 11.5px; color: var(--text-main); line-height: 1.45;">
+          Você não marcou a opção <strong style="color:#fff;">"Compartilhar áudio da guia/sistema"</strong> na janela do navegador. Se o seu vídeo tiver som (YouTube, apresentações ou tutoriais), recompartilhe marcando o áudio:
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" id="btnDismissScreenAudioAlert" class="tab-btn" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-subtle); color: var(--text-muted); font-weight: 600; padding: 6px 12px; font-size: 11.5px; border-radius: 6px; cursor: pointer;">
+        Continuar Sem Som
+      </button>
+      <button type="button" id="btnReShareWithAudio" class="tab-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; padding: 6px 14px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);">
+        <span>🔄 Recompartilhar com Áudio</span>
+      </button>
+    </div>
+  </div>
 </body>
 
 </html>
