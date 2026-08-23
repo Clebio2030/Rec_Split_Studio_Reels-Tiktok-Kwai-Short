@@ -791,6 +791,51 @@
       z-index: 20;
     }
 
+    /* Countdown Overlay (3... 2... 1... 🎙️) */
+    .countdown-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(9, 11, 16, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      border-radius: 14px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .countdown-number {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      font-size: 115px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 35px var(--primary-glow), 0 0 70px rgba(249, 115, 22, 0.7);
+      animation: countdownPop 0.85s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+      line-height: 1;
+    }
+
+    .countdown-label {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--primary);
+      margin-top: 14px;
+      background: rgba(249, 115, 22, 0.15);
+      padding: 4px 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--primary-glow);
+    }
+
+    @keyframes countdownPop {
+      0% { transform: scale(0.65); opacity: 0; }
+      40% { transform: scale(1.18); opacity: 1; }
+      100% { transform: scale(1.0); opacity: 0.95; }
+    }
+
     /* RIGHT: Prompter Styles */
     .prompter-toolbar {
       display: flex;
@@ -1332,6 +1377,9 @@
             <select class="form-control" id="cameraSelect">
               <option value="">Carregando dispositivos...</option>
             </select>
+            <button type="button" class="btnLaunchNvidiaGpuEye" style="width:100%; margin-top:6px; background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.15)); border:1px solid rgba(16,185,129,0.4); color:#10b981; font-weight:700; font-size:11px; padding:6px 10px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+              <span>🚀 Iniciar Câmera AI com GPU (NVIDIA GTX 1650)</span>
+            </button>
           </div>
 
           <button class="btn-stream-toggle" id="btnToggleScreen">
@@ -1532,17 +1580,27 @@
           </div>
 
           <!-- 👁️ AI EYE CONTACT (ALINHAMENTO DE OLHAR PARA A WEBCAM) -->
-          <div class="form-group" style="margin-top:6px; background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.3); padding:8px 10px; border-radius:8px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <label class="form-label" style="margin:0; font-size:11px; font-weight:700; color:#f97316; display:flex; align-items:center; gap:6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path></svg>
+          <div class="form-group" style="margin-top:6px; background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.3); padding:10px 12px; border-radius:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <label class="form-label" style="margin:0; font-size:11.5px; font-weight:700; color:#f97316; display:flex; align-items:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path></svg>
                 <span>Olhar Fixo na Câmera (Eye Contact AI)</span>
               </label>
               <input type="checkbox" id="chkEyeContactAI" style="width:16px; height:16px; cursor:pointer; accent-color:var(--primary);">
             </div>
-            <div style="font-size:9.5px; color:var(--text-dim); margin-top:4px;">
-              Reorienta o foco do olhar diretamente para a lente da câmera durante a gravação.
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <span id="eyeContactStatus" style="font-size:10px; color:var(--text-dim); font-weight:600;">Desativado</span>
+              <span class="slider-val" id="eyeIntensityVal" style="font-size:10.5px; color:var(--primary);">100%</span>
             </div>
+            <div style="margin-top:6px;">
+              <input type="range" id="eyeIntensitySlider" min="30" max="180" step="5" value="100" title="Intensidade da Correção do Olhar">
+            </div>
+            <div style="font-size:9.5px; color:var(--text-dim); margin-top:4px;">
+              Centraliza a pupila e o foco da visão diretamente para a lente mesmo lendo o teleprompter.
+            </div>
+            <button type="button" class="btnLaunchNvidiaGpuEye" style="width:100%; margin-top:8px; background:linear-gradient(135deg, rgba(16,185,129,0.18), rgba(6,182,212,0.18)); border:1px solid rgba(16,185,129,0.45); color:#10b981; font-weight:700; font-size:11px; padding:6px 10px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+              <span>🚀 Iniciar Câmera AI com GPU (NVIDIA GTX)</span>
+            </button>
           </div>
 
           <!-- 🎬 EFEITOS CINEMATOGRÁFICOS & STUDIO FX -->
@@ -1693,6 +1751,18 @@
           </div>
 
           <div class="form-group">
+            <label class="form-label">
+              <span>⏱️ Contagem Regressiva:</span>
+              <span class="slider-val" id="countdownValLabel" style="font-size:11px;">3s</span>
+            </label>
+            <select class="form-control" id="countdownSelect">
+              <option value="3" selected>⏳ 3 segundos (Recomendado)</option>
+              <option value="5">⏳ 5 segundos (Mais tempo)</option>
+              <option value="0">⚡ Sem contagem (Imediato)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label class="form-label">Estilo de Layout:</label>
             <div class="layout-matrix">
               <button class="btn-layout active" data-layout="split-vertical">
@@ -1756,6 +1826,12 @@
         <div class="live-hook-badge" id="hookBadge">
           <span>🎣 Gancho:</span>
           <span id="hookCountdownVal">3.0s</span>
+        </div>
+
+        <!-- Live Countdown Overlay (3... 2... 1... 🎙️) -->
+        <div class="countdown-overlay" id="countdownOverlay" style="display:none;">
+          <div class="countdown-number" id="countdownNumber">3</div>
+          <div class="countdown-label" id="countdownLabel">PREPARE-SE</div>
         </div>
 
         <canvas id="studioCanvas" width="1080" height="1920"></canvas>
@@ -2142,17 +2218,23 @@
           </div>
         </div>
       </div>
-      <div class="modal-footer" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
         <a id="downloadOriginalBtn" class="tab-btn"
-          style="background:rgba(255,255,255,0.08); border:1px solid var(--border-medium); color:#fff; text-decoration:none; padding:10px 16px; font-weight:600; border-radius:8px; font-size:12px;"
+          style="background:rgba(255,255,255,0.08); border:1px solid var(--border-medium); color:#fff; text-decoration:none; padding:10px 14px; font-weight:600; border-radius:8px; font-size:11.5px;"
           download="VideoOriginal.webm">
-          ⬇️ Baixar Original
+          ⬇️ Baixar Original (.webm)
         </a>
-        <a id="downloadVideoBtn" class="tab-btn"
-          style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; text-decoration:none; padding:10px 20px; font-weight:700; border-radius:8px; font-size:12px; box-shadow:0 2px 12px var(--success-glow);"
-          download="MeuVideoGravado.webm">
-          ⬇️ Baixar Vídeo WebM HD
-        </a>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <a id="downloadVideoBtn" class="tab-btn"
+            style="background:rgba(249,115,22,0.18); border:1px solid var(--primary); color:#fff; text-decoration:none; padding:10px 14px; font-weight:700; border-radius:8px; font-size:12px;"
+            download="MeuVideoGravado.webm">
+            ⚡ Baixar WebM HD
+          </a>
+          <button type="button" id="btnDownloadMp4" class="tab-btn"
+            style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; padding:10px 18px; font-weight:800; border-radius:8px; font-size:12.5px; box-shadow:0 2px 14px var(--success-glow); border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <span>🎬 Baixar em MP4 (H.264)</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2799,7 +2881,7 @@ Regras:
         let videoConstraints = {
           width: { ideal: 1920 },
           height: { ideal: 1080 },
-          frameRate: { ideal: 60, max: 60 }
+          frameRate: { ideal: 30, max: 60 }
         };
         if (deviceId) {
           videoConstraints.deviceId = { ideal: deviceId };
@@ -2809,7 +2891,10 @@ Regras:
           camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
         } catch (strictErr) {
           console.warn('Tentando câmera com constraints básicas:', strictErr);
-          camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          camStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } }, 
+            audio: false 
+          });
         }
 
         if (rawCam) {
@@ -2833,6 +2918,21 @@ Regras:
         if (activeSettings && activeSettings.deviceId && cameraSelect) {
           cameraSelect.value = activeSettings.deviceId;
           savedCameraId = activeSettings.deviceId;
+        }
+
+        // Se o usuário selecionou uma Câmera Virtual (ex: NVIDIA / OBS), desativa a IA interna do navegador para não gerar conflito de tremor
+        if (cameraSelect && cameraSelect.selectedOptions && cameraSelect.selectedOptions[0]) {
+          const camLabel = (cameraSelect.selectedOptions[0].text || '').toLowerCase();
+          if (camLabel.includes('virtual') || camLabel.includes('obs') || camLabel.includes('unity') || camLabel.includes('nvidia')) {
+            if (chkEyeContactAI && chkEyeContactAI.checked) {
+              chkEyeContactAI.checked = false;
+              isEyeContactActive = false;
+              if (eyeContactStatus) {
+                eyeContactStatus.innerText = '✓ Câmera Virtual GPU (IA do navegador em pausa p/ máxima fluidez)';
+                eyeContactStatus.style.color = '#10b981';
+              }
+            }
+          }
         }
       } catch (err) {
         console.error('Erro ao iniciar câmera:', err);
@@ -3527,40 +3627,122 @@ Regras:
       });
     }
 
-    // ── MEDIAPIPE IRIS (AI EYE CONTACT / OLHAR NA CÂMERA WEBGL) ──
+    // ── MEDIAPIPE IRIS (AI EYE CONTACT / OLHAR NA CÂMERA WEBGL DE ALTA PRECISÃO) ──
     const chkEyeContactAI = document.getElementById('chkEyeContactAI');
+    const eyeContactStatus = document.getElementById('eyeContactStatus');
+    const eyeIntensitySlider = document.getElementById('eyeIntensitySlider');
+    const eyeIntensityVal = document.getElementById('eyeIntensityVal');
+
     let isEyeContactActive = false;
+    let eyeIntensity = 1.0;
     let faceMeshInstance = null;
     let eyeLandmarksData = null;
     let isFaceMeshLoading = false;
     let isProcessingFaceMesh = false;
+    let lastFaceDetectionTime = 0;
+
+    // Suavização temporal do deslocamento (Left & Right)
+    let smoothLdx = 0;
+    let smoothLdy = 0;
+    let smoothRdx = 0;
+    let smoothRdy = 0;
+
+    // Canvas offscreen para extração ultra-rápida de frames (sem travar o Canvas 60fps)
+    const eyeDetectCanvas = document.createElement('canvas');
+    eyeDetectCanvas.width = 480;
+    eyeDetectCanvas.height = 360;
+    const eyeDetectCtx = eyeDetectCanvas.getContext('2d', { willReadFrequently: true });
+
+    async function loadScriptAsync(src) {
+      return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) { resolve(); return; }
+        const s = document.createElement('script');
+        s.src = src;
+        s.crossOrigin = 'anonymous';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    async function ensureFaceMeshLoaded() {
+      if (typeof FaceMesh !== 'undefined') return true;
+      try {
+        await loadScriptAsync('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js');
+        await loadScriptAsync('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js');
+        return typeof FaceMesh !== 'undefined';
+      } catch (e) {
+        console.warn('Erro carregando FaceMesh de jsdelivr, tentando unpkg:', e);
+        try {
+          await loadScriptAsync('https://unpkg.com/@mediapipe/face_mesh/face_mesh.js');
+          return typeof FaceMesh !== 'undefined';
+        } catch (err2) {
+          console.error('Falha ao carregar FaceMesh:', err2);
+          return false;
+        }
+      }
+    }
 
     async function initMediaPipeIris() {
       if (faceMeshInstance || isFaceMeshLoading) return;
       isFaceMeshLoading = true;
+      if (eyeContactStatus) {
+        eyeContactStatus.innerText = '⏳ Carregando IA...';
+        eyeContactStatus.style.color = '#fbbf24';
+      }
+
       try {
-        if (typeof FaceMesh === 'undefined') {
-          console.warn('Carregando biblioteca FaceMesh...');
+        const loaded = await ensureFaceMeshLoaded();
+        if (!loaded) {
+          if (eyeContactStatus) {
+            eyeContactStatus.innerText = '⚠️ Erro ao carregar IA';
+            eyeContactStatus.style.color = 'var(--danger)';
+          }
           return;
         }
+
         faceMeshInstance = new FaceMesh({
           locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
         });
+
         faceMeshInstance.setOptions({
           maxNumFaces: 1,
           refineLandmarks: true,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5
+          minDetectionConfidence: 0.4,
+          minTrackingConfidence: 0.4
         });
+
         faceMeshInstance.onResults((results) => {
           if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
             eyeLandmarksData = results.multiFaceLandmarks[0];
+            lastFaceDetectionTime = Date.now();
+            if (eyeContactStatus && isEyeContactActive) {
+              eyeContactStatus.innerText = '🟢 Olhar Centralizado na Câmera';
+              eyeContactStatus.style.color = '#10b981';
+            }
           } else {
             eyeLandmarksData = null;
+            if (eyeContactStatus && isEyeContactActive) {
+              if (Date.now() - lastFaceDetectionTime > 1500) {
+                eyeContactStatus.innerText = '🟡 Procurando Rosto...';
+                eyeContactStatus.style.color = '#fbbf24';
+              }
+            }
           }
         });
+
+        await faceMeshInstance.initialize();
+        if (eyeContactStatus && isEyeContactActive) {
+          eyeContactStatus.innerText = '🟢 IA Ativa (Calibrada)';
+          eyeContactStatus.style.color = '#10b981';
+        }
       } catch (err) {
         console.warn('Erro ao inicializar MediaPipe Iris:', err);
+        if (eyeContactStatus) {
+          eyeContactStatus.innerText = '⚠️ Falha no modelo';
+          eyeContactStatus.style.color = 'var(--danger)';
+        }
       } finally {
         isFaceMeshLoading = false;
       }
@@ -3578,10 +3760,58 @@ Regras:
         isEyeContactActive = e.target.checked;
         localStorage.setItem('csdigital_eye_contact_active', isEyeContactActive ? 'true' : 'false');
         if (isEyeContactActive) {
+          if (eyeContactStatus) {
+            eyeContactStatus.innerText = '⏳ Ativando...';
+            eyeContactStatus.style.color = '#fbbf24';
+          }
           await initMediaPipeIris();
+        } else {
+          eyeLandmarksData = null;
+          if (eyeContactStatus) {
+            eyeContactStatus.innerText = 'Desativado';
+            eyeContactStatus.style.color = 'var(--text-dim)';
+          }
         }
       });
     }
+
+    if (eyeIntensitySlider) {
+      eyeIntensitySlider.addEventListener('input', (e) => {
+        eyeIntensity = parseInt(e.target.value, 10) / 100;
+        if (eyeIntensityVal) eyeIntensityVal.innerText = e.target.value + '%';
+        localStorage.setItem('csdigital_eye_intensity', e.target.value);
+      });
+      const savedIntensity = localStorage.getItem('csdigital_eye_intensity');
+      if (savedIntensity) {
+        eyeIntensitySlider.value = savedIntensity;
+        eyeIntensity = parseInt(savedIntensity, 10) / 100;
+        if (eyeIntensityVal) eyeIntensityVal.innerText = savedIntensity + '%';
+      }
+    }
+
+    // ── LANÇADOR DA CÂMERA VIRTUAL NVIDIA GTX 1650 (1-CLIQUE) ──
+    document.querySelectorAll('.btnLaunchNvidiaGpuEye').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span>⏳ Inicializando Câmera GPU NVIDIA...</span>';
+        btn.disabled = true;
+        try {
+          const res = await fetch('/api/studio/start-eye-contact', { method: 'POST' });
+          setTimeout(async () => {
+            btn.innerHTML = '<span>✓ Câmera NVIDIA Ativa no Windows!</span>';
+            await getCameras();
+            setTimeout(() => {
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+            }, 3500);
+          }, 2500);
+        } catch (err) {
+          alert('Para iniciar a câmera virtual GPU, execute o arquivo: tools/nvidia_eye_contact/2_INICIAR_OLHO_NA_CAMERA.bat');
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      });
+    });
 
     // ── ATALHOS GLOBAIS VIA SSE (F9 = REC / F8 = PAUSA EM QUALQUER JANELA DO WINDOWS) ──
     try {
@@ -3916,58 +4146,112 @@ Regras:
       ctx.restore();
 
       // ── AI EYE CONTACT (CORREÇÃO DE FOCO VISUAL PARA A LENTE DA CÂMERA) ──
-      if (isEyeContactActive && eyeLandmarksData && eyeLandmarksData.length >= 478) {
+      if (isEyeContactActive && eyeLandmarksData && eyeLandmarksData.length >= 468) {
         try {
-          const scaleX = w / sw;
-          const scaleY = h / sh;
+          const lmHelper = (idx) => {
+            const lm = eyeLandmarksData[idx];
+            if (!lm) return null;
+            const normCropX = (lm.x * vw - sx) / sw;
+            const normCropY = (lm.y * vh - sy) / sh;
+            return {
+              canvasX: isCamMirrored ? (x + w - (normCropX * w)) : (x + (normCropX * w)),
+              canvasY: y + (normCropY * h),
+              normX: lm.x,
+              normY: lm.y
+            };
+          };
 
-          // Processa ambos os olhos
-          const eyes = [
-            { iris: 468, bounds: [33, 133, 159, 145] },
-            { iris: 473, bounds: [362, 263, 386, 374] }
+          // Processamento do Olho Esquerdo & Olho Direito
+          const eyeConfigs = [
+            {
+              isLeft: true,
+              irisIdx: 468,
+              outerIdx: 33,
+              innerIdx: 133,
+              topIdx: 159,
+              botIdx: 145,
+              contour: [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
+            },
+            {
+              isLeft: false,
+              irisIdx: 473,
+              outerIdx: 263,
+              innerIdx: 362,
+              topIdx: 386,
+              botIdx: 374,
+              contour: [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
+            }
           ];
 
-          for (const eye of eyes) {
-            const irisLm = eyeLandmarksData[eye.iris];
-            const pOuter = eyeLandmarksData[eye.bounds[0]];
-            const pInner = eyeLandmarksData[eye.bounds[1]];
-            const pTop = eyeLandmarksData[eye.bounds[2]];
-            const pBot = eyeLandmarksData[eye.bounds[3]];
+          for (const cfg of eyeConfigs) {
+            const pOuter = lmHelper(cfg.outerIdx);
+            const pInner = lmHelper(cfg.innerIdx);
+            const pTop = lmHelper(cfg.topIdx);
+            const pBot = lmHelper(cfg.botIdx);
+            if (!pOuter || !pInner || !pTop || !pBot) continue;
 
-            if (!irisLm || !pOuter || !pInner || !pTop || !pBot) continue;
+            const targetCanvasX = (pOuter.canvasX + pInner.canvasX) / 2;
+            const targetCanvasY = (pTop.canvasY + pBot.canvasY) / 2;
 
-            const eyeCenterNx = (pOuter.x + pInner.x) / 2;
-            const eyeCenterNy = (pTop.y + pBot.y) / 2;
-
-            const dxNorm = (eyeCenterNx - irisLm.x) * 0.75;
-            const dyNorm = (eyeCenterNy - irisLm.y) * 0.75;
-
-            const irisCanvasX = (irisLm.x * vw - sx) * scaleX;
-            const irisCanvasY = (irisLm.y * vh - sy) * scaleY;
-            const eyeRadius = Math.abs(pOuter.x - pInner.x) * vw * scaleX * 0.6;
-
-            if (eyeRadius > 5 && (Math.abs(dxNorm) > 0.001 || Math.abs(dyNorm) > 0.001)) {
-              const dxPx = dxNorm * vw * scaleX;
-              const dyPx = dyNorm * vh * scaleY;
-
-              ctx.save();
-              ctx.beginPath();
-              const posX = isCamMirrored ? (x + w - irisCanvasX) : (x + irisCanvasX);
-              const posY = y + irisCanvasY;
-              ctx.arc(posX, posY, eyeRadius, 0, Math.PI * 2);
-              ctx.clip();
-
-              if (isCamMirrored) {
-                ctx.translate(posX, posY);
-                ctx.drawImage(video, (irisLm.x * vw - eyeRadius / scaleX), (irisLm.y * vh - eyeRadius / scaleY), (eyeRadius * 2) / scaleX, (eyeRadius * 2) / scaleY, -eyeRadius - dxPx, -eyeRadius + dyPx, eyeRadius * 2, eyeRadius * 2);
-              } else {
-                ctx.drawImage(video, (irisLm.x * vw - eyeRadius / scaleX), (irisLm.y * vh - eyeRadius / scaleY), (eyeRadius * 2) / scaleX, (eyeRadius * 2) / scaleY, posX - eyeRadius + dxPx, posY - eyeRadius + dyPx, eyeRadius * 2, eyeRadius * 2);
-              }
-              ctx.restore();
+            let curIrisCanvasX = targetCanvasX;
+            let curIrisCanvasY = targetCanvasY;
+            const pIris = (eyeLandmarksData.length >= 478) ? lmHelper(cfg.irisIdx) : null;
+            if (pIris) {
+              curIrisCanvasX = pIris.canvasX;
+              curIrisCanvasY = pIris.canvasY;
             }
+
+            const rawDx = (targetCanvasX - curIrisCanvasX) * (1.1 * eyeIntensity);
+            const rawDy = (targetCanvasY - curIrisCanvasY) * (1.1 * eyeIntensity);
+
+            const eyeW = Math.hypot(pOuter.canvasX - pInner.canvasX, pOuter.canvasY - pInner.canvasY);
+            const eyeH = Math.hypot(pTop.canvasY - pBot.canvasY, pTop.canvasX - pBot.canvasX);
+            const maxShiftX = eyeW * 0.35;
+            const maxShiftY = eyeH * 0.45;
+
+            const clampedDx = Math.max(-maxShiftX, Math.min(maxShiftX, rawDx));
+            const clampedDy = Math.max(-maxShiftY, Math.min(maxShiftY, rawDy));
+
+            if (cfg.isLeft) {
+              smoothLdx = smoothLdx * 0.6 + clampedDx * 0.4;
+              smoothLdy = smoothLdy * 0.6 + clampedDy * 0.4;
+            } else {
+              smoothRdx = smoothRdx * 0.6 + clampedDx * 0.4;
+              smoothRdy = smoothRdy * 0.6 + clampedDy * 0.4;
+            }
+
+            const activeShiftX = cfg.isLeft ? smoothLdx : smoothRdx;
+            const activeShiftY = cfg.isLeft ? smoothLdy : smoothRdy;
+
+            // Recorta estritamente o contorno anatômico das pálpebras (sem mover a pele nem os cílios)
+            ctx.save();
+            ctx.beginPath();
+            cfg.contour.forEach((idx, i) => {
+              const pt = lmHelper(idx);
+              if (pt) {
+                if (i === 0) ctx.moveTo(pt.canvasX, pt.canvasY);
+                else ctx.lineTo(pt.canvasX, pt.canvasY);
+              }
+            });
+            ctx.closePath();
+            ctx.clip();
+
+            if (filterParts.length > 0) {
+              ctx.filter = filterParts.join(' ');
+            }
+
+            // Renderiza o globo ocular corrigido para o centro
+            if (isCamMirrored) {
+              ctx.translate(x + w + activeShiftX, y + activeShiftY);
+              ctx.scale(-1, 1);
+              ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+            } else {
+              ctx.drawImage(video, sx, sy, sw, sh, x + activeShiftX, y + activeShiftY, w, h);
+            }
+            ctx.restore();
           }
         } catch (e) {
-          console.warn('Eye contact warp error:', e);
+          console.warn('Erro na renderização do Olhar AI:', e);
         }
       }
 
@@ -4202,14 +4486,20 @@ Regras:
       ctx.fillText(brandText, iconX + iconW + gap, badgeY + (badgeH / 2) + 1);
       ctx.restore();
 
-      // Envia frames para o FaceMesh em background
-      if (isEyeContactActive && faceMeshInstance && !isProcessingFaceMesh && rawCam && rawCam.videoWidth > 0) {
+      // Envia frames para o FaceMesh em background usando o canvas offscreen com throttling inteligente (30 fps max)
+      const now = performance.now();
+      if (isEyeContactActive && faceMeshInstance && !isProcessingFaceMesh && (now - lastFaceDetectionTime >= 33) && rawCam && rawCam.readyState >= 2 && rawCam.videoWidth > 0) {
         isProcessingFaceMesh = true;
-        faceMeshInstance.send({ image: rawCam }).then(() => {
+        try {
+          eyeDetectCtx.drawImage(rawCam, 0, 0, eyeDetectCanvas.width, eyeDetectCanvas.height);
+          faceMeshInstance.send({ image: eyeDetectCanvas }).then(() => {
+            isProcessingFaceMesh = false;
+          }).catch(() => {
+            isProcessingFaceMesh = false;
+          });
+        } catch (e) {
           isProcessingFaceMesh = false;
-        }).catch(() => {
-          isProcessingFaceMesh = false;
-        });
+        }
       }
 
       requestAnimationFrame(renderStage);
@@ -4517,7 +4807,80 @@ Regras:
     }
 
     // ── MULTI-TAKE RECORDING ENGINE WITH REAL UNDO & FAST MERGE ──
-    function startTake() {
+    let isCountingDown = false;
+    let countdownTimerInterval = null;
+
+    function playBeepSound(freq = 440, dur = 0.1) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function cancelCountdown() {
+      if (isCountingDown) {
+        isCountingDown = false;
+        clearInterval(countdownTimerInterval);
+        const overlay = document.getElementById('countdownOverlay');
+        if (overlay) overlay.style.display = 'none';
+        btnStartRecord.style.display = 'flex';
+        btnPauseRecord.style.display = 'none';
+      }
+    }
+
+    function startTake(skipCountdown = false) {
+      const countdownSelect = document.getElementById('countdownSelect');
+      const countdownSecs = countdownSelect ? parseInt(countdownSelect.value, 10) : 3;
+
+      // Dispara contagem regressiva apenas no Take 1 (quando não houver trechos ainda gravados)
+      if (!skipCountdown && recordedTakes.length === 0 && countdownSecs > 0) {
+        isCountingDown = true;
+        let count = countdownSecs;
+        const overlay = document.getElementById('countdownOverlay');
+        const numEl = document.getElementById('countdownNumber');
+        const labelEl = document.getElementById('countdownLabel');
+
+        if (overlay && numEl) {
+          overlay.style.display = 'flex';
+          numEl.innerText = count;
+          if (labelEl) labelEl.innerText = 'PREPARE-SE';
+          playBeepSound(440, 0.12);
+
+          btnStartRecord.style.display = 'none';
+          btnResumeRecord.style.display = 'none';
+          btnPauseRecord.style.display = 'none';
+          btnStopRecord.style.display = 'none';
+
+          countdownTimerInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+              numEl.innerText = count;
+              playBeepSound(440, 0.12);
+            } else if (count === 0) {
+              numEl.innerText = '🎙️';
+              if (labelEl) labelEl.innerText = 'GRAVANDO!';
+              playBeepSound(880, 0.22);
+            } else {
+              clearInterval(countdownTimerInterval);
+              isCountingDown = false;
+              overlay.style.display = 'none';
+              startTake(true);
+            }
+          }, 1000);
+          return;
+        }
+      }
+
       if (isEyeContactActive) {
         fetch('/api/studio/start-eye-contact', { method: 'POST' }).catch(() => {});
       }
@@ -4638,6 +5001,7 @@ Regras:
     }
 
     function undoLastTake() {
+      cancelCountdown();
       if (isCurrentlyRecording || recordedTakes.length === 0) return;
       const removed = recordedTakes.pop();
       if (removed && removed.url) {
@@ -4674,6 +5038,7 @@ Regras:
     }
 
     function performDiscardAllTakes() {
+      cancelCountdown();
       if (modalConfirmDiscard) {
         modalConfirmDiscard.classList.remove('active');
         modalConfirmDiscard.style.display = 'none';
@@ -4764,6 +5129,7 @@ Regras:
     }
 
     async function finishAndExportSession() {
+      cancelCountdown();
       if (isCurrentlyRecording) {
         await pauseTake();
       }
@@ -4810,6 +5176,17 @@ Regras:
     // ── SAVE & LOAD USER DEFAULTS ──
     const btnSaveDefaults = document.getElementById('btnSaveDefaults');
     const saveStatusMsg = document.getElementById('saveStatusMsg');
+    const countdownSelect = document.getElementById('countdownSelect');
+    const countdownValLabel = document.getElementById('countdownValLabel');
+
+    if (countdownSelect) {
+      countdownSelect.addEventListener('change', () => {
+        if (countdownValLabel) {
+          const val = countdownSelect.value;
+          countdownValLabel.innerText = val === '0' ? 'Sem contagem' : val + 's';
+        }
+      });
+    }
 
     function saveAllDefaults() {
       const bannerTextInput = document.getElementById('bannerTextInput');
@@ -4819,6 +5196,7 @@ Regras:
         micVol: micVolSlider ? micVolSlider.value : '100',
         aspect: aspectSelect ? aspectSelect.value : '9:16',
         quality: videoQuality || '1080p',
+        countdownSecs: countdownSelect ? countdownSelect.value : '3',
         layout: currentLayout,
         camZoom,
         camPanX,
@@ -4862,6 +5240,12 @@ Regras:
         }
         if (d.quality) {
           setVideoQuality(d.quality);
+        }
+        if (d.countdownSecs !== undefined && countdownSelect) {
+          countdownSelect.value = d.countdownSecs;
+          if (countdownValLabel) {
+            countdownValLabel.innerText = d.countdownSecs === '0' ? 'Sem contagem' : d.countdownSecs + 's';
+          }
         }
         if (d.aspect && aspectSelect) {
           aspectRatio = d.aspect;
@@ -5102,7 +5486,7 @@ Regras:
       if (downloadVideoBtn) {
         downloadVideoBtn.href = url;
         downloadVideoBtn.download = filenameOriginal;
-        downloadVideoBtn.innerHTML = '⬇️ Baixar Vídeo WebM HD';
+        downloadVideoBtn.innerHTML = '⚡ Baixar WebM HD';
       }
 
       // Reset estado visual do card de silêncio
@@ -5123,7 +5507,80 @@ Regras:
       previewPlayer.pause();
     });
 
-    // ── ALGORITMO DE AUTO-CORTE DE SILÊNCIO & JUMP CUT EM JAVASCRIPT ──
+    async function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const res = reader.result;
+          const base64data = res.split(',')[1];
+          resolve(base64data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    // ── BOTÃO DE CONVERSÃO & DOWNLOAD EM MP4 (H.264 / AAC) ──
+    const btnDownloadMp4 = document.getElementById('btnDownloadMp4');
+    if (btnDownloadMp4) {
+      btnDownloadMp4.addEventListener('click', async () => {
+        const targetBlob = currentAutoCutBlob || currentRawVideoBlob;
+        if (!targetBlob) {
+          alert('Vídeo não encontrado para conversão.');
+          return;
+        }
+
+        const originalHtml = btnDownloadMp4.innerHTML;
+        btnDownloadMp4.disabled = true;
+        btnDownloadMp4.innerHTML = '⏳ Convertendo p/ MP4 (FFmpeg)...';
+
+        try {
+          const base64 = await blobToBase64(targetBlob);
+          const serverUrl = window.location.port === '3399' ? '/api/studio/convert-mp4' : 'http://localhost:3399/api/studio/convert-mp4';
+
+          const res = await fetch(serverUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoBase64: base64 })
+          });
+
+          if (!res.ok) {
+            throw new Error(`Servidor respondeu com código ${res.status}`);
+          }
+
+          const mp4Blob = await res.blob();
+          const mp4Url = URL.createObjectURL(mp4Blob);
+
+          const selected = allScripts.find(s => s.id === (scriptSelector ? scriptSelector.value : '1'));
+          const scriptName = selected ? selected.titulo.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Video';
+          const autoCutTag = currentAutoCutBlob ? '_AutoCut_Viral' : '';
+          const filenameMp4 = `CsDigital_${scriptName}${autoCutTag}.mp4`;
+
+          const a = document.createElement('a');
+          a.href = mp4Url;
+          a.download = filenameMp4;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          btnDownloadMp4.innerHTML = '✓ MP4 Baixado!';
+          setTimeout(() => {
+            btnDownloadMp4.disabled = false;
+            btnDownloadMp4.innerHTML = originalHtml;
+          }, 3000);
+        } catch (err) {
+          console.warn('Falha na conversão para MP4 via servidor:', err);
+          alert('Servidor Node.js local não detectado para conversão MP4. O download será realizado no formato WebM HD de alta qualidade.');
+          if (downloadVideoBtn) {
+            downloadVideoBtn.click();
+          }
+          btnDownloadMp4.disabled = false;
+          btnDownloadMp4.innerHTML = originalHtml;
+        }
+      });
+    }
+
+    // ── ALGORITMO DE AUTO-CORTE DE SILÊNCIO & JUMP CUT (FFMPEG OU CANVAS + ÁUDIO RECONSTRUÍDO) ──
     if (btnProcessAutoCut) {
       btnProcessAutoCut.addEventListener('click', async () => {
         if (!currentRawVideoBlob) {
@@ -5145,7 +5602,7 @@ Regras:
           const arrayBuffer = await currentRawVideoBlob.arrayBuffer();
           const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
 
-          silenceProgressBar.style.width = '45%';
+          silenceProgressBar.style.width = '40%';
           silenceStatusText.innerText = '✂️ Detectando momentos de fala e pausas...';
 
           const channelData = audioBuffer.getChannelData(0);
@@ -5189,7 +5646,6 @@ Regras:
               inSpeech = true;
               startWin = Math.max(0, i - padWindows);
             } else if (!isSpeech[i] && inSpeech) {
-              // Verifica se a pausa é menor que o limiar
               let nextSpeechIndex = -1;
               for (let k = i; k < Math.min(windowsCount, i + minSilenceWindows); k++) {
                 if (isSpeech[k]) { nextSpeechIndex = k; break; }
@@ -5199,7 +5655,7 @@ Regras:
                 const endWin = Math.min(windowsCount - 1, i + padWindows);
                 rawIntervals.push({ startSec: (startWin * windowSize) / sampleRate, endSec: (endWin * windowSize) / sampleRate });
               } else {
-                i = nextSpeechIndex; // Pula o micropause
+                i = nextSpeechIndex;
               }
             }
           }
@@ -5216,60 +5672,115 @@ Regras:
           const totalSpeechSec = rawIntervals.reduce((acc, cur) => acc + (cur.endSec - cur.startSec), 0);
           const savedTime = Math.max(0, audioBuffer.duration - totalSpeechSec);
 
-          silenceProgressBar.style.width = '75%';
-          silenceStatusText.innerText = `🎬 Renderizando vídeo sem pausas (${savedTime.toFixed(1)}s economizados)...`;
+          silenceProgressBar.style.width = '60%';
+          silenceStatusText.innerText = `🎬 Processando cortes com áudio perfeitamente alinhado...`;
 
-          // Cria vídeo acelerado / jump-cut renderizando no Canvas
-          const offVideo = document.createElement('video');
-          offVideo.src = currentRawVideoUrl;
-          offVideo.muted = true;
-          offVideo.playsInline = true;
+          // 1. Tenta processar via FFmpeg no Servidor Node.js (Precisão absoluta)
+          let serverSuccess = false;
+          try {
+            const serverUrl = window.location.port === '3399' ? '/api/studio/process-silence-cut' : 'http://localhost:3399/api/studio/process-silence-cut';
+            const base64 = await blobToBase64(currentRawVideoBlob);
+            const segments = rawIntervals.map(r => ({ start: r.startSec, end: r.endSec }));
 
-          await new Promise((res) => {
-            offVideo.onloadedmetadata = () => res();
-          });
+            const response = await fetch(serverUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ videoBase64: base64, segments })
+            });
 
-          const offCanvas = document.createElement('canvas');
-          offCanvas.width = offVideo.videoWidth || 1080;
-          offCanvas.height = offVideo.videoHeight || 1920;
-          const offCtx = offCanvas.getContext('2d', { alpha: false });
-
-          // Configura gravação dos trechos
-          const cutStream = offCanvas.captureStream(60);
-          const cutChunks = [];
-          let cutBitrate = 12_000_000;
-          let cutOptions = { mimeType: 'video/webm;codecs=vp9,opus', videoBitsPerSecond: cutBitrate };
-          if (!MediaRecorder.isTypeSupported(cutOptions.mimeType)) {
-            cutOptions = { mimeType: 'video/webm', videoBitsPerSecond: cutBitrate };
-          }
-          const cutRecorder = new MediaRecorder(cutStream, cutOptions);
-          cutRecorder.ondataavailable = (e) => {
-            if (e.data && e.data.size > 0) cutChunks.push(e.data);
-          };
-
-          cutRecorder.start(100);
-
-          // Executa reprodução rápida de cada intervalo de fala
-          for (let seg of rawIntervals) {
-            offVideo.currentTime = seg.startSec;
-            await new Promise((r) => { offVideo.onseeked = () => r(); });
-            try { await offVideo.play(); } catch(e) {}
-
-            const durationSeg = seg.endSec - seg.startSec;
-            const startTime = Date.now();
-
-            while ((Date.now() - startTime) < (durationSeg * 1000) && !offVideo.paused && !offVideo.ended) {
-              offCtx.drawImage(offVideo, 0, 0, offCanvas.width, offCanvas.height);
-              await new Promise((r) => requestAnimationFrame(r));
+            if (response.ok) {
+              currentAutoCutBlob = await response.blob();
+              currentAutoCutUrl = URL.createObjectURL(currentAutoCutBlob);
+              serverSuccess = true;
             }
-            offVideo.pause();
+          } catch (e) {
+            console.log('Servidor offline ou sem FFmpeg, utilizando mixer de áudio local no Canvas:', e);
           }
 
-          cutRecorder.stop();
-          await new Promise((r) => { cutRecorder.onstop = () => r(); });
+          // 2. Fallback de alta fidelidade no navegador com mixer de áudio
+          if (!serverSuccess) {
+            silenceProgressBar.style.width = '75%';
+            silenceStatusText.innerText = `🎬 Renderizando áudio e vídeo sem pausas (${savedTime.toFixed(1)}s economizados)...`;
 
-          currentAutoCutBlob = new Blob(cutChunks, { type: 'video/webm' });
-          currentAutoCutUrl = URL.createObjectURL(currentAutoCutBlob);
+            const offVideo = document.createElement('video');
+            offVideo.src = currentRawVideoUrl;
+            offVideo.muted = true;
+            offVideo.playsInline = true;
+
+            await new Promise((res) => {
+              offVideo.onloadedmetadata = () => res();
+            });
+
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = offVideo.videoWidth || 1080;
+            offCanvas.height = offVideo.videoHeight || 1920;
+            const offCtx = offCanvas.getContext('2d', { alpha: false });
+
+            // Reconstrução do buffer de áudio concatenado
+            const clientAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const audioDest = clientAudioCtx.createMediaStreamDestination();
+            
+            const totalSamples = rawIntervals.reduce((acc, cur) => acc + Math.floor((cur.endSec - cur.startSec) * sampleRate), 0);
+            const mergedAudioBuffer = clientAudioCtx.createBuffer(audioBuffer.numberOfChannels, totalSamples, sampleRate);
+            
+            for (let ch = 0; ch < audioBuffer.numberOfChannels; ch++) {
+              const srcData = audioBuffer.getChannelData(ch);
+              const destData = mergedAudioBuffer.getChannelData(ch);
+              let offset = 0;
+              for (const seg of rawIntervals) {
+                const sIdx = Math.floor(seg.startSec * sampleRate);
+                const eIdx = Math.min(srcData.length, Math.floor(seg.endSec * sampleRate));
+                const slice = srcData.subarray(sIdx, eIdx);
+                destData.set(slice, offset);
+                offset += slice.length;
+              }
+            }
+
+            const audioSource = clientAudioCtx.createBufferSource();
+            audioSource.buffer = mergedAudioBuffer;
+            audioSource.connect(audioDest);
+
+            const cutStream = offCanvas.captureStream(60);
+            const mixedAudioTrack = audioDest.stream.getAudioTracks()[0];
+            if (mixedAudioTrack) {
+              cutStream.addTrack(mixedAudioTrack);
+            }
+
+            const cutChunks = [];
+            let cutBitrate = 14_000_000;
+            let cutOptions = { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: cutBitrate };
+            if (!MediaRecorder.isTypeSupported(cutOptions.mimeType)) {
+              cutOptions = { mimeType: 'video/webm', videoBitsPerSecond: cutBitrate };
+            }
+            const cutRecorder = new MediaRecorder(cutStream, cutOptions);
+            cutRecorder.ondataavailable = (e) => {
+              if (e.data && e.data.size > 0) cutChunks.push(e.data);
+            };
+
+            cutRecorder.start(100);
+            audioSource.start(0);
+
+            for (let seg of rawIntervals) {
+              offVideo.currentTime = seg.startSec;
+              await new Promise((r) => { offVideo.onseeked = () => r(); });
+              try { await offVideo.play(); } catch(e) {}
+
+              const durationSeg = seg.endSec - seg.startSec;
+              const startTime = Date.now();
+
+              while ((Date.now() - startTime) < (durationSeg * 1000) && !offVideo.paused && !offVideo.ended) {
+                offCtx.drawImage(offVideo, 0, 0, offCanvas.width, offCanvas.height);
+                await new Promise((r) => requestAnimationFrame(r));
+              }
+              offVideo.pause();
+            }
+
+            cutRecorder.stop();
+            await new Promise((r) => { cutRecorder.onstop = () => r(); });
+
+            currentAutoCutBlob = new Blob(cutChunks, { type: 'video/webm' });
+            currentAutoCutUrl = URL.createObjectURL(currentAutoCutBlob);
+          }
 
           silenceProgressBar.style.width = '100%';
           silenceStatusText.innerText = '✅ Auto-Corte finalizado com sucesso!';
@@ -5284,7 +5795,7 @@ Regras:
 
           downloadVideoBtn.href = currentAutoCutUrl;
           downloadVideoBtn.download = filenameAutoCut;
-          downloadVideoBtn.innerHTML = '⚡ Baixar Vídeo Viral com Auto-Corte';
+          downloadVideoBtn.innerHTML = '⚡ Baixar WebM com Auto-Corte';
 
           silenceSavedTimeLabel.innerText = `${savedTime.toFixed(1)}s de pausas e silêncios eliminados! Duração final: ${totalSpeechSec.toFixed(1)}s`;
           silenceResultBox.style.display = 'block';
