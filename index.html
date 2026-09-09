@@ -4799,8 +4799,25 @@ Regras:
         }
       }
 
-      requestAnimationFrame(renderStage);
+      lastRenderTimestamp = performance.now();
+      if (document.hidden) {
+        setTimeout(renderStage, 1000 / 30);
+      } else {
+        requestAnimationFrame(renderStage);
+      }
     }
+
+    let lastRenderTimestamp = performance.now();
+    // Watchdog de segurança contra throttling do Chrome em segundo plano:
+    // Garante que mesmo com a aba minimizada ou fora de foco, o Canvas continue sendo gravado a 30fps sem congelar a imagem
+    setInterval(() => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        const timeSince = performance.now() - lastRenderTimestamp;
+        if (timeSince > 45) {
+          renderStage();
+        }
+      }
+    }, 30);
 
     renderStage();
 
@@ -6185,83 +6202,94 @@ Regras:
           const AudioContextClass = window.AudioContext || window.webkitAudioContext;
           const audioCtx = new AudioContextClass();
           const arrayBuffer = await targetItem.rawBlob.arrayBuffer();
-          const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
-
-          if (activeQueueId === targetItem.id) {
-            silenceProgressBar.style.width = '60%';
-            silenceStatusText.innerText = '✂️ Detectando fala e eliminando silêncios...';
-          }
-
-          const channelData = audioBuffer.getChannelData(0);
-          const sampleRate = audioBuffer.sampleRate;
-          const windowSize = Math.floor(sampleRate * 0.02);
-          const windowsCount = Math.floor(channelData.length / windowSize);
-
-          let threshold = 0.012;
-          let minSilenceWindows = Math.floor(0.28 / 0.02);
-          let padWindows = 3;
-
-          if (autoCutSensitivity === 'aggressive') {
-            threshold = 0.018;
-            minSilenceWindows = Math.floor(0.18 / 0.02);
-            padWindows = 2;
-          } else if (autoCutSensitivity === 'smooth') {
-            threshold = 0.007;
-            minSilenceWindows = Math.floor(0.45 / 0.02);
-            padWindows = 4;
-          }
-
-          const isSpeech = new Uint8Array(windowsCount);
-          for (let i = 0; i < windowsCount; i++) {
-            let sum = 0;
-            const startIdx = i * windowSize;
-            for (let j = 0; j < windowSize; j++) {
-              const sample = channelData[startIdx + j];
-              sum += sample * sample;
-            }
-            const rms = Math.sqrt(sum / windowSize);
-            if (rms >= threshold) isSpeech[i] = 1;
+          
+          let audioBuffer = null;
+          try {
+            audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+          } catch (decErr) {
+            console.warn('decodeAudioData falhou localmente. Acionando motor FFmpeg do servidor...', decErr);
           }
 
           let rawIntervals = [];
-          let inSpeech = false;
-          let startWin = 0;
+          let savedTime = 0;
+          let totalSpeechSec = 0;
 
-          for (let i = 0; i < windowsCount; i++) {
-            if (isSpeech[i] && !inSpeech) {
-              inSpeech = true;
-              startWin = Math.max(0, i - padWindows);
-            } else if (!isSpeech[i] && inSpeech) {
-              let nextSpeechIndex = -1;
-              for (let k = i; k < Math.min(windowsCount, i + minSilenceWindows); k++) {
-                if (isSpeech[k]) { nextSpeechIndex = k; break; }
+          if (audioBuffer) {
+            if (activeQueueId === targetItem.id) {
+              silenceProgressBar.style.width = '60%';
+              silenceStatusText.innerText = '✂️ Detectando fala e eliminando silêncios...';
+            }
+
+            const channelData = audioBuffer.getChannelData(0);
+            const sampleRate = audioBuffer.sampleRate;
+            const windowSize = Math.floor(sampleRate * 0.02);
+            const windowsCount = Math.floor(channelData.length / windowSize);
+
+            let threshold = 0.012;
+            let minSilenceWindows = Math.floor(0.28 / 0.02);
+            let padWindows = 3;
+
+            if (autoCutSensitivity === 'aggressive') {
+              threshold = 0.018;
+              minSilenceWindows = Math.floor(0.18 / 0.02);
+              padWindows = 2;
+            } else if (autoCutSensitivity === 'smooth') {
+              threshold = 0.007;
+              minSilenceWindows = Math.floor(0.45 / 0.02);
+              padWindows = 4;
+            }
+
+            const isSpeech = new Uint8Array(windowsCount);
+            for (let i = 0; i < windowsCount; i++) {
+              let sum = 0;
+              const startIdx = i * windowSize;
+              for (let j = 0; j < windowSize; j++) {
+                const sample = channelData[startIdx + j];
+                sum += sample * sample;
               }
-              if (nextSpeechIndex === -1) {
-                inSpeech = false;
-                const endWin = Math.min(windowsCount - 1, i + padWindows);
-                rawIntervals.push({ startSec: (startWin * windowSize) / sampleRate, endSec: (endWin * windowSize) / sampleRate });
-              } else {
-                i = nextSpeechIndex;
+              const rms = Math.sqrt(sum / windowSize);
+              if (rms >= threshold) isSpeech[i] = 1;
+            }
+
+            let inSpeech = false;
+            let startWin = 0;
+
+            for (let i = 0; i < windowsCount; i++) {
+              if (isSpeech[i] && !inSpeech) {
+                inSpeech = true;
+                startWin = Math.max(0, i - padWindows);
+              } else if (!isSpeech[i] && inSpeech) {
+                let nextSpeechIndex = -1;
+                for (let k = i; k < Math.min(windowsCount, i + minSilenceWindows); k++) {
+                  if (isSpeech[k]) { nextSpeechIndex = k; break; }
+                }
+                if (nextSpeechIndex === -1) {
+                  inSpeech = false;
+                  const endWin = Math.min(windowsCount - 1, i + padWindows);
+                  rawIntervals.push({ startSec: (startWin * windowSize) / sampleRate, endSec: (endWin * windowSize) / sampleRate });
+                } else {
+                  i = nextSpeechIndex;
+                }
               }
             }
-          }
 
-          if (inSpeech) {
-            rawIntervals.push({ startSec: (startWin * windowSize) / sampleRate, endSec: audioBuffer.duration });
-          }
-          if (rawIntervals.length === 0) {
-            rawIntervals = [{ startSec: 0, endSec: audioBuffer.duration }];
-          }
+            if (inSpeech) {
+              rawIntervals.push({ startSec: (startWin * windowSize) / sampleRate, endSec: audioBuffer.duration });
+            }
+            if (rawIntervals.length === 0) {
+              rawIntervals = [{ startSec: 0, endSec: audioBuffer.duration }];
+            }
 
-          const totalSpeechSec = rawIntervals.reduce((acc, cur) => acc + (cur.endSec - cur.startSec), 0);
-          const savedTime = Math.max(0, audioBuffer.duration - totalSpeechSec);
+            totalSpeechSec = rawIntervals.reduce((acc, cur) => acc + (cur.endSec - cur.startSec), 0);
+            savedTime = Math.max(0, audioBuffer.duration - totalSpeechSec);
+          }
 
           if (activeQueueId === targetItem.id) {
             silenceProgressBar.style.width = '80%';
-            silenceStatusText.innerText = '🎬 Renderizando vídeo acelerado e sem pausas...';
+            silenceStatusText.innerText = '🎬 Renderizando vídeo sem pausas com motor FFmpeg...';
           }
 
-          // 1. Tenta FFmpeg no Servidor (Single-Pass Ultra Rápido)
+          // 1. Processa via FFmpeg no Servidor (Single-Pass Ultra Rápido)
           let serverSuccess = false;
           try {
             const serverUrl = window.location.port === '3399' ? '/api/studio/process-silence-cut' : 'http://localhost:3399/api/studio/process-silence-cut';
@@ -6273,17 +6301,20 @@ Regras:
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 videoBase64: base64,
-                segments,
+                segments: segments.length > 0 ? segments : null,
+                sensitivity: autoCutSensitivity,
                 speed: targetItem.speed || selectedVideoSpeed || 1.0
               })
             });
 
             if (response.ok) {
               const resBlob = await response.blob();
+              currentAutoCutBlob = resBlob;
+              currentAutoCutUrl = URL.createObjectURL(resBlob);
               targetItem.autoCutBlob = resBlob;
-              targetItem.autoCutUrl = URL.createObjectURL(resBlob);
+              targetItem.autoCutUrl = currentAutoCutUrl;
               targetItem.status = 'done';
-              targetItem.savedSec = savedTime;
+              targetItem.savedSec = savedTime || 30;
               serverSuccess = true;
             }
           } catch (e) {
