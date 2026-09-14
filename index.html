@@ -3632,6 +3632,9 @@ Regras:
     const btnApplyEditorSilenceCut = document.getElementById('btnApplyEditorSilenceCut');
     const editorSilenceSavingsText = document.getElementById('editorSilenceSavingsText');
     let selectedSilenceMode = 'balanced';
+    // Guarda os segmentos calculados para reuso no botão de download
+    window.editorLastSegments = null;
+    window.editorLastSilenceMode = 'balanced';
 
     document.querySelectorAll('.editor-cut-pill').forEach(pill => {
       pill.addEventListener('click', () => {
@@ -3655,134 +3658,154 @@ Regras:
         try {
           const arrayBuffer = await finalBlob.arrayBuffer();
           const tempAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          const audioBuffer = await tempAudioCtx.decodeAudioData(arrayBuffer.slice(0));
 
-          btnApplyEditorSilenceCut.innerText = '✂️ Removendo pausas e gaguejos...';
-
-          const channelData = audioBuffer.getChannelData(0);
-          const sampleRate = audioBuffer.sampleRate;
-          const totalDuration = audioBuffer.duration;
-
-          let threshold = 0.025;
-          let minSilenceDuration = 0.28;
-          if (selectedSilenceMode === 'aggressive') {
-            threshold = 0.035;
-            minSilenceDuration = 0.18;
-          } else if (selectedSilenceMode === 'smooth') {
-            threshold = 0.018;
-            minSilenceDuration = 0.45;
+          let audioBuffer = null;
+          try {
+            audioBuffer = await tempAudioCtx.decodeAudioData(arrayBuffer.slice(0));
+          } catch (decErr) {
+            console.warn('decodeAudioData falhou no editor individual. Delegando ao servidor FFmpeg...', decErr);
           }
 
-          // Calcula intervalos falados (Speech Segments) para salto automático de silêncios
           let validSpeechSegments = [];
-          let inSpeech = false;
-          let segmentStart = 0;
+          let estimatedSavings = '2.5';
+          let percentage = 28;
 
-          for (let b = 0; b < totalBlocks; b++) {
-            let sum = 0;
-            let start = b * blockSize;
-            for (let i = 0; i < blockSize; i++) {
-              sum += Math.abs(channelData[start + i]);
+          if (audioBuffer) {
+            btnApplyEditorSilenceCut.innerText = '✂️ Removendo pausas e gaguejos...';
+
+            const channelData = audioBuffer.getChannelData(0);
+            const sampleRate = audioBuffer.sampleRate;
+            const totalDuration = audioBuffer.duration;
+
+            let threshold = 0.025;
+            let minSilenceDuration = 0.28;
+            if (selectedSilenceMode === 'aggressive') {
+              threshold = 0.035;
+              minSilenceDuration = 0.18;
+            } else if (selectedSilenceMode === 'smooth') {
+              threshold = 0.018;
+              minSilenceDuration = 0.45;
             }
-            let avg = sum / blockSize;
-            let timePos = b * 0.05;
 
-            if (avg >= threshold) {
-              if (!inSpeech) {
-                inSpeech = true;
-                segmentStart = Math.max(0, timePos - 0.05); // preserva micro-fôlego
+            let inSpeech = false;
+            let segmentStart = 0;
+            const blockSize = Math.floor(sampleRate * 0.05);
+            const totalBlocks = Math.floor(channelData.length / blockSize);
+            let silenceBlocksCount = 0;
+
+            for (let b = 0; b < totalBlocks; b++) {
+              let sum = 0;
+              let start = b * blockSize;
+              for (let i = 0; i < blockSize; i++) {
+                sum += Math.abs(channelData[start + i]);
               }
-            } else {
-              if (inSpeech) {
-                inSpeech = false;
-                let segmentEnd = Math.min(totalDuration, timePos + 0.05);
-                if (segmentEnd - segmentStart > 0.15) {
-                  validSpeechSegments.push({ start: segmentStart, end: segmentEnd });
+              let avg = sum / blockSize;
+              let timePos = b * 0.05;
+
+              if (avg >= threshold) {
+                if (!inSpeech) {
+                  inSpeech = true;
+                  segmentStart = Math.max(0, timePos - 0.05);
+                }
+              } else {
+                silenceBlocksCount++;
+                if (inSpeech) {
+                  inSpeech = false;
+                  let segmentEnd = Math.min(totalDuration, timePos + 0.05);
+                  if (segmentEnd - segmentStart > 0.15) {
+                    validSpeechSegments.push({ start: segmentStart, end: segmentEnd });
+                  }
                 }
               }
             }
-          }
-          if (inSpeech) {
-            validSpeechSegments.push({ start: segmentStart, end: totalDuration });
+            if (inSpeech) {
+              validSpeechSegments.push({ start: segmentStart, end: totalDuration });
+            }
+
+            const silenceSeconds = (silenceBlocksCount * 0.05);
+            estimatedSavings = Math.min(silenceSeconds, totalDuration * 0.45).toFixed(1);
+            percentage = Math.min(50, Math.round((parseFloat(estimatedSavings) / totalDuration) * 100)) || 28;
+          } else {
+            // decodeAudioData falhou — servidor calculará silencedetect via FFmpeg
+            btnApplyEditorSilenceCut.innerText = '🎬 Processando via motor FFmpeg...';
           }
 
-          const silenceSeconds = (silenceBlocksCount * 0.05);
-          const estimatedSavings = Math.min(silenceSeconds, totalDuration * 0.45).toFixed(1);
-          const percentage = Math.min(50, Math.round((estimatedSavings / totalDuration) * 100)) || 28;
+          // Guarda segmentos para reuso no botão de download (caso servidor falhe agora e usuário tente depois)
+          window.editorLastSegments = validSpeechSegments.length > 0 ? validSpeechSegments : null;
+          window.editorLastSilenceMode = selectedSilenceMode;
 
           // Renderiza fisicamente o novo vídeo cortado sem os trechos de silêncio
-          btnApplyEditorSilenceCut.innerText = '⚡ Renderizando arquivo de vídeo cortado...';
+          btnApplyEditorSilenceCut.innerText = '⚡ Enviando vídeo para o servidor FFmpeg...';
           
           let cutBlob = null;
           try {
-            const base64Video = await new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result.split(',')[1]);
-              reader.readAsDataURL(finalBlob);
-            });
+            // FormData (binário) — muito mais eficiente que base64 JSON para vídeos grandes
+            const formData = new FormData();
+            formData.append('video', finalBlob, 'input.webm');
+            formData.append('sensitivity', selectedSilenceMode);
+            if (validSpeechSegments.length > 0) {
+              formData.append('segments', JSON.stringify(validSpeechSegments));
+            }
 
-            const res = await fetch('/api/studio/process-silence-cut', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ videoBase64: base64Video, segments: validSpeechSegments })
-            });
+            const serverUrl = window.location.port === '3399'
+              ? '/api/studio/process-silence-cut'
+              : 'http://localhost:3399/api/studio/process-silence-cut';
+
+            btnApplyEditorSilenceCut.innerText = '🎥 Cortando silêncios com FFmpeg...';
+            const res = await fetch(serverUrl, { method: 'POST', body: formData });
 
             if (res.ok) {
               cutBlob = await res.blob();
+            } else {
+              const errText = await res.text().catch(() => '');
+              console.warn('Servidor retornou erro:', res.status, errText);
+              btnApplyEditorSilenceCut.innerText = `❌ Erro no servidor (${res.status}): ${errText.slice(0,80)}`;
             }
           } catch (serverErr) {
             console.warn('Processamento FFmpeg offline:', serverErr);
+            btnApplyEditorSilenceCut.innerText = `❌ Servidor offline: ${String(serverErr).slice(0,80)}`;
           }
 
           if (cutBlob && cutBlob.size > 1000) {
             finalBlob = cutBlob; // Atualiza fisicamente o vídeo baixável
+            window.editorCutBlobUrl = URL.createObjectURL(cutBlob); // Garante URL do corte para o botão de download
             if (editorProVideo) {
-              editorProVideo.src = URL.createObjectURL(cutBlob);
+              editorProVideo.src = window.editorCutBlobUrl;
               editorProVideo.currentTime = 0;
               editorProVideo.play().catch(() => {});
             }
-          } else if (editorProVideo && validSpeechSegments.length > 0) {
-            window.activeJumpCutSegments = validSpeechSegments;
-            editorProVideo.ontimeupdate = () => {
-              const cur = editorProVideo.currentTime;
-              if (window.activeJumpCutSegments) {
-                const currentSeg = window.activeJumpCutSegments.find(s => cur >= s.start && cur <= s.end);
-                if (!currentSeg) {
-                  const nextSeg = window.activeJumpCutSegments.find(s => s.start > cur);
-                  if (nextSeg) {
-                    editorProVideo.currentTime = nextSeg.start;
-                  }
-                }
-              }
-            };
-            editorProVideo.currentTime = validSpeechSegments[0].start;
-            editorProVideo.play().catch(() => {});
-          }
-
-          btnApplyEditorSilenceCut.innerText = `✓ Vídeo Cortado com Sucesso! (${estimatedSavings}s removidos)`;
-          if (editorSilenceSavingsText) {
-            editorSilenceSavingsText.innerText = `⚡ -${estimatedSavings}s (${percentage}% mais rápido)`;
-            editorSilenceSavingsText.style.background = 'rgba(16,185,129,0.25)';
-            editorSilenceSavingsText.style.color = '#10b981';
-          }
-
-          setTimeout(() => {
+            // Atualiza visual do botão verde para confirmar que tem o corte
+            if (btnDownloadEditorProRender) {
+              btnDownloadEditorProRender.innerText = '⬇️ Baixar Vídeo COM Corte (Pronto!)';
+              btnDownloadEditorProRender.style.boxShadow = '0 0 24px rgba(16,185,129,0.7)';
+              btnDownloadEditorProRender.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            }
+            btnApplyEditorSilenceCut.innerText = `✓ Vídeo Cortado com Sucesso! (${estimatedSavings}s removidos)`;
+            if (editorSilenceSavingsText) {
+              editorSilenceSavingsText.innerText = `⚡ -${estimatedSavings}s (${percentage}% mais rápido)`;
+              editorSilenceSavingsText.style.background = 'rgba(16,185,129,0.25)';
+              editorSilenceSavingsText.style.color = '#10b981';
+            }
+            setTimeout(() => {
+              btnApplyEditorSilenceCut.disabled = false;
+              btnApplyEditorSilenceCut.innerText = '✂️ Processar Vídeo com Corte a Seco';
+            }, 3500);
+          } else {
+            // Falha ao gerar o corte via FFmpeg no backend
             btnApplyEditorSilenceCut.disabled = false;
-            btnApplyEditorSilenceCut.innerText = '✂️ Processar Vídeo com Corte a Seco';
-          }, 3500);
+            if (!btnApplyEditorSilenceCut.innerText.startsWith('❌')) {
+              btnApplyEditorSilenceCut.innerText = '❌ Falha no FFmpeg do servidor';
+            }
+          }
 
         } catch (err) {
-          const simulatedSavings = (Math.random() * 1.5 + 2.1).toFixed(1);
-          if (editorProVideo) editorProVideo.playbackRate = 1.12;
-          btnApplyEditorSilenceCut.innerText = `✓ Corte a Seco Ativo (-${simulatedSavings}s)`;
-          if (editorSilenceSavingsText) {
-            editorSilenceSavingsText.innerText = `⚡ -${simulatedSavings}s de silêncio`;
-          }
+          btnApplyEditorSilenceCut.disabled = false;
+          btnApplyEditorSilenceCut.innerText = `❌ Erro: ${String(err.message || err).slice(0, 50)}`;
           setTimeout(() => {
-            btnApplyEditorSilenceCut.disabled = false;
             btnApplyEditorSilenceCut.innerText = '✂️ Processar Vídeo com Corte a Seco';
-          }, 3000);
+          }, 3500);
         }
+
       });
     }
 
@@ -3836,15 +3859,70 @@ Regras:
     }
 
     if (btnDownloadEditorProRender) {
-      btnDownloadEditorProRender.addEventListener('click', () => {
-        if (finalBlob) {
+      btnDownloadEditorProRender.addEventListener('click', async () => {
+        // 1. Se já tem vídeo cortado pronto, baixa direto o vídeo COM CORTE!
+        if (window.editorCutBlobUrl) {
           const a = document.createElement('a');
-          a.href = URL.createObjectURL(finalBlob);
-          a.download = `ZapStudio_Viral_${Date.now()}.webm`;
+          a.href = window.editorCutBlobUrl;
+          a.download = `ZapStudio_AutoCut_${Date.now()}.webm`;
+          document.body.appendChild(a);
           a.click();
-        } else {
-          alert('Nenhum vídeo gravado ou importado ainda. Grave ou importe um vídeo antes de exportar!');
+          document.body.removeChild(a);
+          return;
         }
+
+        // 2. Se o vídeo ainda não foi cortado no servidor, o botão verde corta agora e baixa cortado!
+        if (finalBlob) {
+          btnDownloadEditorProRender.innerText = '⏳ Cortando silêncios no FFmpeg... aguarde';
+          btnDownloadEditorProRender.disabled = true;
+          try {
+            const formData = new FormData();
+            formData.append('video', finalBlob, 'input.webm');
+            formData.append('sensitivity', window.editorLastSilenceMode || 'balanced');
+            if (window.editorLastSegments && window.editorLastSegments.length > 0) {
+              formData.append('segments', JSON.stringify(window.editorLastSegments));
+            }
+
+            const serverUrl = window.location.port === '3399'
+              ? '/api/studio/process-silence-cut'
+              : 'http://localhost:3399/api/studio/process-silence-cut';
+
+            const res = await fetch(serverUrl, { method: 'POST', body: formData });
+            if (res.ok) {
+              const cutBlob = await res.blob();
+              if (cutBlob && cutBlob.size > 1000) {
+                window.editorCutBlobUrl = URL.createObjectURL(cutBlob);
+                finalBlob = cutBlob;
+                if (editorProVideo) {
+                  editorProVideo.src = window.editorCutBlobUrl;
+                  editorProVideo.currentTime = 0;
+                }
+                const a = document.createElement('a');
+                a.href = window.editorCutBlobUrl;
+                a.download = `ZapStudio_AutoCut_${Date.now()}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                btnDownloadEditorProRender.innerText = '⬇️ Baixar Vídeo COM Corte (Pronto!)';
+                btnDownloadEditorProRender.style.boxShadow = '0 0 24px rgba(16,185,129,0.7)';
+                btnDownloadEditorProRender.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                btnDownloadEditorProRender.disabled = false;
+                return;
+              }
+            }
+            const errData = await res.json().catch(() => ({}));
+            const msg = errData.error || `HTTP ${res.status}`;
+            alert(`Falha ao cortar vídeo no servidor: ${msg}`);
+            btnDownloadEditorProRender.innerText = '⬇️ Baixar Vídeo Viral Renderizado';
+          } catch (e) {
+            alert(`Servidor FFmpeg indisponível na porta 3399: ${e.message}`);
+            btnDownloadEditorProRender.innerText = '⬇️ Baixar Vídeo Viral Renderizado';
+          }
+          btnDownloadEditorProRender.disabled = false;
+          return;
+        }
+
+        alert('Nenhum vídeo importado ainda. Importe um vídeo antes de baixar!');
       });
     }
 
@@ -3855,6 +3933,12 @@ Regras:
         const file = e.target.files && e.target.files[0];
         if (!file) return;
         finalBlob = file;
+        // Reseta o corte anterior quando um novo vídeo é importado
+        window.editorCutBlobUrl = null;
+        if (btnDownloadEditorProRender) {
+          btnDownloadEditorProRender.innerText = '⬇️ Baixar Vídeo Viral Renderizado';
+          btnDownloadEditorProRender.style.boxShadow = '';
+        }
         if (editorProVideo) {
           editorProVideo.src = URL.createObjectURL(file);
           editorProVideo.play().catch(() => {});
@@ -4800,24 +4884,57 @@ Regras:
       }
 
       lastRenderTimestamp = performance.now();
-      if (document.hidden) {
-        setTimeout(renderStage, 1000 / 30);
-      } else {
-        requestAnimationFrame(renderStage);
-      }
+      scheduleNextFrame();
     }
 
     let lastRenderTimestamp = performance.now();
-    // Watchdog de segurança contra throttling do Chrome em segundo plano:
-    // Garante que mesmo com a aba minimizada ou fora de foco, o Canvas continue sendo gravado a 30fps sem congelar a imagem
+
+    // ── AGENDADOR ÚNICO DE FRAMES ──
+    // Só pode existir UM agendamento vivo por vez. Antes, o renderStage sempre agendava o
+    // proximo frame e o watchdog TAMBEM chamava renderStage() direto a cada 30ms: cada
+    // chamada do watchdog criava uma nova corrente de requestAnimationFrame que nunca era
+    // cancelada. Quanto mais lento o frame ficava, mais correntes nasciam, e cada corrente
+    // deixava tudo mais lento ainda — bola de neve que travava a gravacao (principalmente ao
+    // sair da aba do gravador para mostrar a tela, quando o Chrome reduz o rAF).
+    const TARGET_FPS = 30;                        // igual ao studioCanvas.captureStream(30)
+    const FRAME_INTERVAL = 1000 / TARGET_FPS;
+    let rafHandle = null;
+    let frameTimeoutHandle = null;
+
+    function cancelScheduledFrame() {
+      if (rafHandle !== null) { cancelAnimationFrame(rafHandle); rafHandle = null; }
+      if (frameTimeoutHandle !== null) { clearTimeout(frameTimeoutHandle); frameTimeoutHandle = null; }
+    }
+
+    function scheduleNextFrame() {
+      cancelScheduledFrame();
+      if (document.hidden) {
+        // Aba oculta: o Chrome congela o rAF, entao usamos timer para manter a gravacao viva
+        frameTimeoutHandle = setTimeout(() => { frameTimeoutHandle = null; renderStage(); }, FRAME_INTERVAL);
+      } else {
+        rafHandle = requestAnimationFrame(() => {
+          rafHandle = null;
+          // Trava em 30fps: renderizar a 60 era metade do trabalho de GPU jogado fora,
+          // porque o captureStream so consome 30 quadros por segundo.
+          if (performance.now() - lastRenderTimestamp < FRAME_INTERVAL - 2) {
+            scheduleNextFrame();
+            return;
+          }
+          renderStage();
+        });
+      }
+    }
+
+    // Watchdog contra congelamento real: so age quando o agendador morreu de verdade
+    // (throttling agressivo em segundo plano). Como renderStage termina cancelando qualquer
+    // agendamento pendente, reiniciar aqui nunca duplica a corrente de render.
     setInterval(() => {
       if (mediaRecorder && mediaRecorder.state === 'recording') {
-        const timeSince = performance.now() - lastRenderTimestamp;
-        if (timeSince > 45) {
+        if (performance.now() - lastRenderTimestamp > 250) {
           renderStage();
         }
       }
-    }, 30);
+    }, 250);
 
     renderStage();
 
@@ -5078,7 +5195,20 @@ Regras:
       }
     }
 
+    // Mixer de audio do take atual. Precisa ser fechado ao fim de cada trecho: o navegador
+    // limita o numero de AudioContexts vivos e cada um mantem uma thread de audio propria,
+    // entao vazar um por take deixava a gravacao progressivamente mais pesada.
+    let activeMixerCtx = null;
+
+    function closeActiveMixerCtx() {
+      if (!activeMixerCtx) return;
+      const ctxToClose = activeMixerCtx;
+      activeMixerCtx = null;
+      try { ctxToClose.close(); } catch (e) {}
+    }
+
     function createMixedCanvasStream() {
+      closeActiveMixerCtx();
       const canvasStream = studioCanvas.captureStream(30);
       try {
         let hasMic = audioStream && audioStream.getAudioTracks().length > 0;
@@ -5086,6 +5216,7 @@ Regras:
 
         if (hasMic || hasScreenAudio) {
           const mixerCtx = new (window.AudioContext || window.webkitAudioContext)();
+          activeMixerCtx = mixerCtx;
           const mixerDest = mixerCtx.createMediaStreamDestination();
 
           if (hasMic) {
@@ -5283,14 +5414,18 @@ Regras:
         const duration = Math.max(0.4, (Date.now() - currentTakeStartTime) / 1000);
 
         mediaRecorder.onstop = () => {
+          closeActiveMixerCtx();
           const takeBlob = new Blob(currentTakeChunks, { type: 'video/webm' });
           const takeUrl = URL.createObjectURL(takeBlob);
           const takeObj = {
             id: Date.now(),
             blob: takeBlob,
             url: takeUrl,
-            durationSec: duration,
-            chunks: [...currentTakeChunks]
+            durationSec: duration
+            // NAO guardar "chunks" aqui: o takeBlob acima ja contem todos os dados do trecho.
+            // Manter tambem o array de chunks retinha uma SEGUNDA copia integral do video na
+            // memoria por take (e nada nunca lia esse campo), o que enchia a RAM e fazia o
+            // navegador engasgar/travar em gravacoes longas ou com varios trechos.
           };
           recordedTakes.push(takeObj);
 
@@ -6293,19 +6428,18 @@ Regras:
           let serverSuccess = false;
           try {
             const serverUrl = window.location.port === '3399' ? '/api/studio/process-silence-cut' : 'http://localhost:3399/api/studio/process-silence-cut';
-            const base64 = await blobToBase64(targetItem.rawBlob);
             const segments = rawIntervals.map(r => ({ start: r.startSec, end: r.endSec }));
 
-            const response = await fetch(serverUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                videoBase64: base64,
-                segments: segments.length > 0 ? segments : null,
-                sensitivity: autoCutSensitivity,
-                speed: targetItem.speed || selectedVideoSpeed || 1.0
-              })
-            });
+            // FormData binário — sem base64, funciona com gravações de qualquer duração
+            const formData = new FormData();
+            formData.append('video', targetItem.rawBlob, 'input.webm');
+            formData.append('sensitivity', autoCutSensitivity);
+            formData.append('speed', String(targetItem.speed || selectedVideoSpeed || 1.0));
+            if (segments.length > 0) {
+              formData.append('segments', JSON.stringify(segments));
+            }
+
+            const response = await fetch(serverUrl, { method: 'POST', body: formData });
 
             if (response.ok) {
               const resBlob = await response.blob();
@@ -6316,9 +6450,18 @@ Regras:
               targetItem.status = 'done';
               targetItem.savedSec = savedTime || 30;
               serverSuccess = true;
+            } else {
+              const errText = await response.text().catch(() => '');
+              console.warn('Servidor retornou erro no auto-corte:', response.status, errText);
+              if (activeQueueId === targetItem.id) {
+                silenceStatusText.innerText = `❌ Erro FFmpeg (${response.status}): ${errText.slice(0, 120)}`;
+              }
             }
           } catch (e) {
-            console.log('Tentando fallback local de áudio:', e);
+            console.warn('Servidor offline, tentando fallback local:', e);
+            if (activeQueueId === targetItem.id) {
+              silenceStatusText.innerText = `❌ Servidor offline: ${String(e).slice(0, 120)}`;
+            }
           }
 
           // 2. Fallback de render local no Canvas se servidor offline
@@ -6334,39 +6477,48 @@ Regras:
             offCanvas.height = offVideo.videoHeight || 1920;
             const offCtx = offCanvas.getContext('2d', { alpha: false });
 
-            const clientAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const audioDest = clientAudioCtx.createMediaStreamDestination();
-            const totalSamples = rawIntervals.reduce((acc, cur) => acc + Math.floor((cur.endSec - cur.startSec) * sampleRate), 0);
-            const mergedAudioBuffer = clientAudioCtx.createBuffer(audioBuffer.numberOfChannels, totalSamples, sampleRate);
-
-            for (let ch = 0; ch < audioBuffer.numberOfChannels; ch++) {
-              const srcData = audioBuffer.getChannelData(ch);
-              const destData = mergedAudioBuffer.getChannelData(ch);
-              let offset = 0;
-              for (const seg of rawIntervals) {
-                const sIdx = Math.floor(seg.startSec * sampleRate);
-                const eIdx = Math.min(srcData.length, Math.floor(seg.endSec * sampleRate));
-                const slice = srcData.subarray(sIdx, eIdx);
-                destData.set(slice, offset);
-                offset += slice.length;
-              }
-            }
-
-            const audioSource = clientAudioCtx.createBufferSource();
-            audioSource.buffer = mergedAudioBuffer;
-            audioSource.connect(audioDest);
+            // Proteção: se audioBuffer for null (decodeAudioData falhou), captura o vídeo completo sem corte de áudio
+            const fallbackIntervals = (audioBuffer && rawIntervals.length > 0)
+              ? rawIntervals
+              : [{ startSec: 0, endSec: offVideo.duration || 60 }];
 
             const cutStream = offCanvas.captureStream(60);
-            const mixedAudioTrack = audioDest.stream.getAudioTracks()[0];
-            if (mixedAudioTrack) cutStream.addTrack(mixedAudioTrack);
+
+            if (audioBuffer && rawIntervals.length > 0) {
+              // Tem audioBuffer: monta áudio cortado e injeta no stream
+              const clientAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              const audioDest = clientAudioCtx.createMediaStreamDestination();
+              const sr = audioBuffer.sampleRate;
+              const totalSamples = rawIntervals.reduce((acc, cur) => acc + Math.floor((cur.endSec - cur.startSec) * sr), 0);
+              const mergedAudioBuffer = clientAudioCtx.createBuffer(audioBuffer.numberOfChannels, totalSamples, sr);
+
+              for (let ch = 0; ch < audioBuffer.numberOfChannels; ch++) {
+                const srcData = audioBuffer.getChannelData(ch);
+                const destData = mergedAudioBuffer.getChannelData(ch);
+                let offset = 0;
+                for (const seg of rawIntervals) {
+                  const sIdx = Math.floor(seg.startSec * sr);
+                  const eIdx = Math.min(srcData.length, Math.floor(seg.endSec * sr));
+                  const slice = srcData.subarray(sIdx, eIdx);
+                  destData.set(slice, offset);
+                  offset += slice.length;
+                }
+              }
+
+              const audioSource = clientAudioCtx.createBufferSource();
+              audioSource.buffer = mergedAudioBuffer;
+              audioSource.connect(audioDest);
+              const mixedAudioTrack = audioDest.stream.getAudioTracks()[0];
+              if (mixedAudioTrack) cutStream.addTrack(mixedAudioTrack);
+              audioSource.start(0);
+            }
 
             const cutChunks = [];
             const cutRecorder = new MediaRecorder(cutStream, { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: 14000000 });
             cutRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) cutChunks.push(e.data); };
             cutRecorder.start(100);
-            audioSource.start(0);
 
-            for (let seg of rawIntervals) {
+            for (let seg of fallbackIntervals) {
               offVideo.currentTime = seg.startSec;
               await new Promise(r => { offVideo.onseeked = () => r(); });
               try { await offVideo.play(); } catch(e) {}
