@@ -2132,8 +2132,21 @@
           <label class="tab-btn" style="width:100%; background:rgba(255,255,255,0.05); border:1px dashed rgba(255,255,255,0.25); cursor:pointer; justify-content:center; padding:9px 12px; font-size:12px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; border-radius:8px; transition:var(--transition-smooth);" id="btnImportVideoLabel">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             <span>📁 Importar Vídeo do Computador (MP4, WebM, MOV)</span>
-            <input type="file" id="editorVideoFileInput" accept="video/*" style="display:none;">
+            <input type="file" id="editorVideoFileInput" accept="video/*" multiple style="display:none;">
           </label>
+          <div style="font-size:10px; color:rgba(255,255,255,0.45); text-align:center; margin-top:5px;">
+            Selecione vários arquivos para juntá-los num vídeo só
+          </div>
+        </div>
+
+        <!-- Fila de junção: aparece só quando há mais de um vídeo escolhido -->
+        <div id="editorMergeBox" style="display:none; width:100%; background:rgba(249,115,22,0.07); border:1px solid rgba(249,115,22,0.3); border-radius:10px; padding:10px 12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:11.5px; font-weight:700; color:#f97316;">🔗 Juntar Vídeos (na ordem abaixo)</span>
+            <span id="editorMergeCount" style="font-size:10px; font-weight:700; color:#f97316; background:rgba(249,115,22,0.15); padding:2px 6px; border-radius:8px;">0 vídeos</span>
+          </div>
+          <div id="editorMergeList" style="display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto; margin-bottom:8px;"></div>
+          <button type="button" id="btnMergeVideos" class="tab-btn" style="width:100%; background:linear-gradient(135deg,#f97316,#ea580c); color:#fff; font-weight:800; justify-content:center; padding:9px; border-radius:8px; font-size:12px;">🔗 Juntar e Carregar no Editor</button>
         </div>
 
         <div class="editor-pro-grid">
@@ -3864,7 +3877,7 @@ Regras:
         if (window.editorCutBlobUrl) {
           const a = document.createElement('a');
           a.href = window.editorCutBlobUrl;
-          a.download = `ZapStudio_AutoCut_${Date.now()}.webm`;
+          a.download = `ZapStudio_AutoCut_${Date.now()}.mp4`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -3899,7 +3912,7 @@ Regras:
                 }
                 const a = document.createElement('a');
                 a.href = window.editorCutBlobUrl;
-                a.download = `ZapStudio_AutoCut_${Date.now()}.webm`;
+                a.download = `ZapStudio_AutoCut_${Date.now()}.mp4`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -3926,27 +3939,119 @@ Regras:
       });
     }
 
-    // ── IMPORTAR VÍDEO NO STUDIO EDITOR PRO ──
+    // ── IMPORTAR VÍDEO(S) NO STUDIO EDITOR PRO ──
     const editorVideoFileInput = document.getElementById('editorVideoFileInput');
+    const editorMergeBox = document.getElementById('editorMergeBox');
+    const editorMergeList = document.getElementById('editorMergeList');
+    const editorMergeCount = document.getElementById('editorMergeCount');
+    const btnMergeVideos = document.getElementById('btnMergeVideos');
+    let editorMergeQueue = [];
+
+    // Carrega um vídeo no player do editor. É por aqui que o resultado da junção entra,
+    // então dali em diante o corte de silêncio e as legendas trabalham sobre o conjunto.
+    function carregarNoEditor(blobOuArquivo, rotulo) {
+      finalBlob = blobOuArquivo;
+      window.editorCutBlobUrl = null; // o corte anterior não vale mais para este vídeo
+      if (editorProVideo) {
+        editorProVideo.src = URL.createObjectURL(blobOuArquivo);
+        editorProVideo.currentTime = 0;
+        editorProVideo.play().catch(() => {});
+      }
+      const labelSpan = document.querySelector('#btnImportVideoLabel span');
+      if (labelSpan) labelSpan.innerText = `✓ ${rotulo}`;
+      const savingsLabel = document.getElementById('editorSilenceSavingsText');
+      if (savingsLabel) savingsLabel.innerText = '⚡ Vídeo pronto para Jump Cuts e Legendas';
+    }
+
+    function renderEditorMergeList() {
+      if (!editorMergeList || !editorMergeBox) return;
+      editorMergeBox.style.display = editorMergeQueue.length > 1 ? 'block' : 'none';
+      if (editorMergeCount) editorMergeCount.innerText = `${editorMergeQueue.length} vídeos`;
+      editorMergeList.innerHTML = '';
+      editorMergeQueue.forEach((f, i) => {
+        const linha = document.createElement('div');
+        linha.style.cssText = 'display:flex; align-items:center; gap:6px; background:rgba(0,0,0,0.25); border-radius:6px; padding:5px 7px;';
+        const nome = document.createElement('span');
+        nome.style.cssText = 'flex:1; font-size:10.5px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
+        nome.innerText = `${i + 1}. ${f.name} (${(f.size / 1048576).toFixed(0)} MB)`;
+        linha.appendChild(nome);
+        const botao = (txt, titulo, acao, ativo) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.innerText = txt;
+          b.title = titulo;
+          b.disabled = !ativo;
+          b.style.cssText = 'background:rgba(255,255,255,0.1); border:none; color:#fff; border-radius:4px; width:22px; height:20px; cursor:pointer; font-size:11px; line-height:1;' + (ativo ? '' : 'opacity:0.3; cursor:default;');
+          if (ativo) b.addEventListener('click', acao);
+          return b;
+        };
+        linha.appendChild(botao('↑', 'Subir', () => {
+          [editorMergeQueue[i - 1], editorMergeQueue[i]] = [editorMergeQueue[i], editorMergeQueue[i - 1]];
+          renderEditorMergeList();
+        }, i > 0));
+        linha.appendChild(botao('↓', 'Descer', () => {
+          [editorMergeQueue[i + 1], editorMergeQueue[i]] = [editorMergeQueue[i], editorMergeQueue[i + 1]];
+          renderEditorMergeList();
+        }, i < editorMergeQueue.length - 1));
+        linha.appendChild(botao('✕', 'Remover', () => {
+          editorMergeQueue.splice(i, 1);
+          renderEditorMergeList();
+          if (editorMergeQueue.length === 1) carregarNoEditor(editorMergeQueue[0], editorMergeQueue[0].name + ' (Carregado com Sucesso)');
+        }, true));
+        editorMergeList.appendChild(linha);
+      });
+    }
+
     if (editorVideoFileInput) {
       editorVideoFileInput.addEventListener('change', async (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        finalBlob = file;
-        // Reseta o corte anterior quando um novo vídeo é importado
-        window.editorCutBlobUrl = null;
-        if (btnDownloadEditorProRender) {
-          btnDownloadEditorProRender.innerText = '⬇️ Baixar Vídeo Viral Renderizado';
-          btnDownloadEditorProRender.style.boxShadow = '';
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+        editorMergeQueue = files;
+        renderEditorMergeList();
+        // Um arquivo só: comportamento de sempre. Vários: espera o clique em juntar.
+        if (files.length === 1) {
+          carregarNoEditor(files[0], `${files[0].name} (Carregado com Sucesso)`);
+        } else {
+          const labelSpan = document.querySelector('#btnImportVideoLabel span');
+          if (labelSpan) labelSpan.innerText = `📁 ${files.length} vídeos escolhidos — confira a ordem abaixo`;
         }
-        if (editorProVideo) {
-          editorProVideo.src = URL.createObjectURL(file);
-          editorProVideo.play().catch(() => {});
+      });
+    }
+
+    if (btnMergeVideos) {
+      btnMergeVideos.addEventListener('click', async () => {
+        if (editorMergeQueue.length < 2) return;
+        const textoOriginal = btnMergeVideos.innerText;
+        btnMergeVideos.disabled = true;
+        btnMergeVideos.innerText = '🔗 Enviando vídeos para o servidor...';
+        try {
+          const formData = new FormData();
+          for (const f of editorMergeQueue) formData.append('videos', f, f.name);
+
+          const serverUrl = window.location.port === '3399'
+            ? '/api/studio/merge-videos'
+            : 'http://localhost:3399/api/studio/merge-videos';
+
+          btnMergeVideos.innerText = '🎬 Juntando no FFmpeg... aguarde';
+          const res = await fetch(serverUrl, { method: 'POST', body: formData });
+          if (!res.ok) {
+            const erro = await res.json().catch(() => ({}));
+            throw new Error(erro.error || `HTTP ${res.status}`);
+          }
+          const merged = await res.blob();
+          if (!merged || merged.size < 1000) throw new Error('O servidor devolveu um arquivo vazio');
+
+          const total = editorMergeQueue.length;
+          carregarNoEditor(merged, `${total} vídeos unidos (${(merged.size / 1048576).toFixed(0)} MB)`);
+          editorMergeQueue = [];
+          renderEditorMergeList();
+          btnMergeVideos.innerText = '✓ Vídeos unidos!';
+          setTimeout(() => { btnMergeVideos.innerText = textoOriginal; btnMergeVideos.disabled = false; }, 2500);
+        } catch (err) {
+          alert(`Não foi possível juntar os vídeos: ${err.message}`);
+          btnMergeVideos.innerText = textoOriginal;
+          btnMergeVideos.disabled = false;
         }
-        const labelSpan = document.querySelector('#btnImportVideoLabel span');
-        if (labelSpan) labelSpan.innerText = `✓ ${file.name} (Carregado com Sucesso)`;
-        const savingsLabel = document.getElementById('editorSilenceSavingsText');
-        if (savingsLabel) savingsLabel.innerText = '⚡ Vídeo pronto para Jump Cuts e Legendas';
       });
     }
 
@@ -6111,7 +6216,10 @@ Regras:
 
       const filenameOriginal = `CsDigital_${item.title}_Original.webm`;
       const speedTag = item.speed && item.speed !== 1.0 ? `_${item.speed}x` : '';
-      const filenameAutoCut = `CsDigital_${item.title}_AutoCut${speedTag}_Viral.webm`;
+      // O corte feito pelo servidor volta em MP4; o fallback local no canvas continua em WebM
+      const cutBlob = item.autoCutBlob || currentAutoCutBlob;
+      const cutExt = cutBlob && cutBlob.type && cutBlob.type.includes('mp4') ? 'mp4' : 'webm';
+      const filenameAutoCut = `CsDigital_${item.title}_AutoCut${speedTag}_Viral.${cutExt}`;
 
       if (downloadOriginalBtn) {
         downloadOriginalBtn.href = currentRawVideoUrl;
@@ -6120,7 +6228,7 @@ Regras:
       if (downloadVideoBtn) {
         downloadVideoBtn.href = currentAutoCutUrl || currentRawVideoUrl;
         downloadVideoBtn.download = currentAutoCutUrl ? filenameAutoCut : filenameOriginal;
-        downloadVideoBtn.innerHTML = currentAutoCutUrl ? '⚡ Baixar WebM com Auto-Corte' : '⚡ Baixar WebM HD';
+        downloadVideoBtn.innerHTML = currentAutoCutUrl ? `⚡ Baixar ${cutExt === 'mp4' ? 'MP4' : 'WebM'} com Auto-Corte` : '⚡ Baixar WebM HD';
       }
 
       // Sincroniza estado visual do card de silêncio para ESTE vídeo específico
@@ -6551,11 +6659,12 @@ Regras:
 
           const selected = allScripts.find(s => s.id === (scriptSelector ? scriptSelector.value : '1'));
           const scriptName = selected ? selected.titulo.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Video';
-          const filenameAutoCut = `CsDigital_${scriptName}_AutoCut_Viral.webm`;
+          const cutExt = currentAutoCutBlob && currentAutoCutBlob.type && currentAutoCutBlob.type.includes('mp4') ? 'mp4' : 'webm';
+          const filenameAutoCut = `CsDigital_${scriptName}_AutoCut_Viral.${cutExt}`;
 
           downloadVideoBtn.href = currentAutoCutUrl;
           downloadVideoBtn.download = filenameAutoCut;
-          downloadVideoBtn.innerHTML = '⚡ Baixar WebM com Auto-Corte';
+          downloadVideoBtn.innerHTML = `⚡ Baixar ${cutExt === 'mp4' ? 'MP4' : 'WebM'} com Auto-Corte`;
 
           silenceSavedTimeLabel.innerText = `${savedTime.toFixed(1)}s de pausas e silêncios eliminados! Duração final: ${totalSpeechSec.toFixed(1)}s`;
           silenceResultBox.style.display = 'block';
