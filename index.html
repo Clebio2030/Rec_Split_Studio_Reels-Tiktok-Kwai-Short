@@ -4038,11 +4038,31 @@ Regras:
             const erro = await res.json().catch(() => ({}));
             throw new Error(erro.error || `HTTP ${res.status}`);
           }
+          // Arquivos que chegaram com o áudio fora do próprio vídeo foram acertados para poder
+          // emendar, mas isso é remendo: quem gravou precisa saber para refazer a origem.
+          let avisos = [];
+          try {
+            const cab = res.headers.get('X-Merge-Avisos');
+            if (cab) avisos = JSON.parse(decodeURIComponent(cab));
+          } catch (e) {}
+
           const merged = await res.blob();
           if (!merged || merged.size < 1000) throw new Error('O servidor devolveu um arquivo vazio');
 
           const total = editorMergeQueue.length;
           carregarNoEditor(merged, `${total} vídeos unidos (${(merged.size / 1048576).toFixed(0)} MB)`);
+
+          if (avisos.length) {
+            alert(
+              'Vídeos unidos. Um aviso sobre a gravação:\n\n' +
+              avisos.map((a) => '• ' + a).join('\n') +
+              '\n\nNesse(s) arquivo(s) a captura de tela perdeu imagem: o som seguiu gravando e ' +
+              'o vídeo ficou para trás. O áudio foi mantido inteiro e a imagem foi esticada para ' +
+              'acompanhar a fala, então nada do que você falou se perde — mas nesse trecho a ' +
+              'imagem corre um pouco mais devagar.\n\n' +
+              'Se isso incomodar, vale regravar esse trecho com menos programas abertos.'
+            );
+          }
           editorMergeQueue = [];
           renderEditorMergeList();
           btnMergeVideos.innerText = '✓ Vídeos unidos!';
